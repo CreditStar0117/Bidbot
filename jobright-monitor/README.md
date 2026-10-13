@@ -424,19 +424,21 @@ comment.
 ### Resume styles
 
 **Resume style**, its own tab in Settings next to **ChatGPT setting**, picks
-the layout. Two ship:
+the layout. Four ship:
 
 | Style  | Looks like |
 |--------|------------|
 | `DE-1` | Teal section headings, sans-serif, skills in a tinted box |
 | `SF-1` | Navy caps name and section labels, sans-serif; every section is a label-left/content-right row with dates hard right and a hairline under each row; skills flow into two bulleted columns |
+| `SF-2` | Blue headline and headings, "Company \| Role" in blue italics, dates before location |
+| `DA-1` | Classic serif: centred small-caps blue name under a blue rule, contact lines split by ◆, centred small-caps headings with a rule either side, "Role, dates" over "Company - Location", skills as bullets in two columns (one column in the PDF) |
 
 They are interchangeable — every style carries the same holes and is filled
 from the same answer, so switching is purely cosmetic and takes
 effect on the next job generated. A style whose file has gone missing falls
 back to `DE-1` rather than failing the job.
 
-Adding a third is a file, a line in `RESUME_STYLES` in `background.js`, and an
+Adding another is a file, a line in `RESUME_STYLES` in `background.js`, and an
 `<option>` in `sidepanel.html`. Nothing else.
 
 #### Style add
@@ -587,6 +589,7 @@ to `0` — it is the only place the threshold appears.
 | `resume_temples/resume-template-DE-1.html` | Your resume, style `DE-1`: fixed half, plus the holes the model fills |
 | `resume_temples/resume-template-sf1.html` | The same resume, style `SF-1` |
 | `resume_temples/resume-template-sf2.html` | Style `SF-2`: blue headline and headings, "Company \| Role" in blue italics, dates before location |
+| `resume_temples/resume-template-da1.html` | Style `DA-1`: classic serif, centred small-caps name and headings, a rule either side of each heading |
 
 ## Load it
 
