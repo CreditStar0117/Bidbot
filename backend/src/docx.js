@@ -1,6 +1,6 @@
 import { deflateRawSync } from 'node:zlib';
 import { htmlToBlocks } from './html.js';
-import { colour, computeStyle, extractCss, parseCss, parseHtml, points } from './htmlPdf.js';
+import { colour, computeStyle, extractCss, parseCss, parseHtml, points, ruledRow } from './htmlPdf.js';
 import { styledResume } from './resumeTemplate.js';
 
 /**
@@ -121,9 +121,9 @@ const DEFAULT_INK = '000000';
  * Line breaks inside the text are kept as breaks: a cover letter typed by hand
  * carries its shape in them, and a single <w:t> would run it all together.
  */
-function run(text, { bold = false, italic = false, size = 10, color = DEFAULT_INK } = {}) {
+function run(text, { bold = false, italic = false, smallCaps = false, size = 10, color = DEFAULT_INK } = {}) {
   const properties =
-    `<w:rPr>${bold ? '<w:b/>' : ''}${italic ? '<w:i/>' : ''}` +
+    `<w:rPr>${bold ? '<w:b/>' : ''}${italic ? '<w:i/>' : ''}${smallCaps ? '<w:smallCaps/>' : ''}` +
     `<w:color w:val="${color}"/><w:sz w:val="${halfPoints(size)}"/><w:szCs w:val="${halfPoints(size)}"/></w:rPr>`;
   const body = String(text ?? '')
     .split('\n')
@@ -139,15 +139,31 @@ function run(text, { bold = false, italic = false, size = 10, color = DEFAULT_IN
  * edge of the skills box, the line under a section heading -- as paragraph
  * borders, which is the nearest thing WordprocessingML has to a box drawn
  * around flowing text.
+ *
+ * `ruled` is the right edge for a caption between two rules: a centre tab
+ * stop halfway between the indent and that edge and a right one at the edge,
+ * each with a line leader, so the caption sits centred with a rule filling
+ * the space either side. Word measures tab stops from the margin, not the
+ * indent.
  */
-function paragraph(runs, { before = 0, after = 60, indent = 0, hanging = 0, shading = null, borders = {}, rightTab = 0 } = {}) {
+function paragraph(
+  runs,
+  { before = 0, after = 60, indent = 0, hanging = 0, shading = null, borders = {}, rightTab = 0, ruled = 0, align = null } = {},
+) {
   const parts = [];
   // A right-aligned tab stop, for text that sits hard against the right edge.
   if (rightTab) parts.push(`<w:tabs><w:tab w:val="right" w:pos="${rightTab}"/></w:tabs>`);
+  if (ruled) {
+    parts.push(
+      `<w:tabs><w:tab w:val="center" w:leader="underscore" w:pos="${Math.round((indent + ruled) / 2)}"/>` +
+        `<w:tab w:val="right" w:leader="underscore" w:pos="${ruled}"/></w:tabs>`,
+    );
+  }
   parts.push(`<w:spacing w:before="${before}" w:after="${after}"/>`);
   if (indent || hanging) {
     parts.push(`<w:ind w:left="${indent}"${hanging ? ` w:hanging="${hanging}"` : ''}/>`);
   }
+  if (align) parts.push(`<w:jc w:val="${align}"/>`);
   if (shading) parts.push(`<w:shd w:val="clear" w:color="auto" w:fill="${shading}"/>`);
 
   // The schema wants the sides in this order, whatever order they arrived in.
@@ -243,6 +259,7 @@ function styledBlocks(html) {
             run(text.replace(/\s+/g, ' '), {
               bold: isBold(style),
               italic: style['font-style'] === 'italic',
+              smallCaps: style['font-variant'] === 'small-caps',
               size: sizeOf(style),
               color: hex(colour(style.color, variables)) || DEFAULT_INK,
             }),
@@ -294,6 +311,27 @@ function styledBlocks(html) {
         continue;
       }
 
+      // A caption between two rules: tab, caption, tab, with the rules drawn
+      // as the tabs' leaders in the rules' colour. The spaces either side
+      // keep the leaders clear of the caption.
+      const ruled = ruledRow(child, style, [...ancestors, node], sheet);
+      if (ruled) {
+        const size = halfPoints(sizeOf(style));
+        const leader = (rule) =>
+          `<w:r><w:rPr><w:color w:val="${hex(rule.colour)}"/><w:sz w:val="${size}"/><w:szCs w:val="${size}"/></w:rPr><w:tab/></w:r>`;
+        const caption = runsOf({ ...child, children: ruled.caption }, style, [...ancestors, node]);
+        const gap = run('  ', { size: sizeOf(style) });
+        blocks.push(
+          paragraph([leader(ruled.before), gap, ...caption, gap, leader(ruled.after)], {
+            before: twips(marginTop),
+            after: twips(marginBottom),
+            indent: ownIndent,
+            ruled: TEXT_WIDTH,
+          }),
+        );
+        continue;
+      }
+
       // A `1fr auto` grid row -- school on the left, years hard right -- is a
       // right tab stop at the text edge, the years after the tab.
       const row = rightColumn(child, style);
@@ -306,7 +344,7 @@ function styledBlocks(html) {
         : runsOf(child, style, [...ancestors, node]);
       if (!inlineRuns.length && !fill) continue;
 
-      const bullet = child.tag === 'li';
+      const bullet = child.tag === 'li' || style.display === 'list-item';
       blocks.push(
         paragraph(bullet ? [run('•  ', { size: sizeOf(style), color: hex(colour(style.color, variables)) || DEFAULT_INK }), ...inlineRuns] : inlineRuns, {
           before: twips(marginTop),
@@ -316,6 +354,7 @@ function styledBlocks(html) {
           shading: fill,
           borders: { left, bottom: under },
           rightTab: row ? TEXT_WIDTH : 0,
+          align: style['text-align'] === 'center' ? 'center' : null,
         }),
       );
     }

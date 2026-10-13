@@ -1,0 +1,127 @@
+NAME: Triet Le
+HEADLINE: Senior Salesforce Developer
+LOCATION: Chandler, AZ
+PHONE: (602) 825-3683
+EMAIL: trietle1997@outlook.com
+LINKEDIN: https://www.linkedin.com/in/trietle97/
+
+SUMMARY
+Senior Salesforce Developer with 7+ years of Salesforce and enterprise technology experience designing, developing, integrating, and supporting scalable CRM solutions across cloud technology, SaaS, consulting, and enterprise environments. Strong hands-on experience with Apex, Lightning Web Components, Visualforce, Salesforce Flow, SOQL, REST APIs, asynchronous Apex, Sales Cloud, Service Cloud, Experience Cloud, OmniStudio, data migration and Salesforce integration architecture. Experienced modernizing legacy automation, building event-driven integrations, designing secure metadata-driven applications, AI-assisted business process automation with Agentforce-aware solution patterns, and supporting enterprise Salesforce platforms used by distributed business and engineering teams. Strong background in Agile delivery, Salesforce DevOps, production troubleshooting, data governance, performance optimization, and emerging AI-assisted Salesforce capabilities. Comfortable collaborating with business stakeholders, architects, product owners, QA teams, administrators, and support teams to deliver secure, maintainable, and production-ready Salesforce solutions.
+
+SKILLS
+Salesforce Platform: Sales Cloud, Service Cloud, Experience Cloud, Lightning Experience, Salesforce Platform, Salesforce CPQ, Revenue Cloud Concepts, Salesforce Data Cloud Concepts, Education Cloud Awareness, Nonprofit Cloud Awareness, Manufacturing Cloud Awareness
+Salesforce Development: Apex, Apex Triggers, Lightning Web Components (LWC), Aura Components, Visualforce, SOQL, SOSL, Batch Apex, Queueable Apex, Scheduled Apex, Future Methods, JavaScript
+OmniStudio: OmniScripts, FlexCards, DataRaptors, Integration Procedures, Guided Intake Flows, Salesforce Industries Awareness
+Automation & Configuration: Flow Builder, Salesforce Flow, Record-Triggered Flows, Screen Flows, Scheduled Flows, Approval Processes, Validation Rules, Formula Fields, Custom Metadata Types, Platform Events, Change Data Capture
+Integration, Data & Migration: REST API, SOAP API, Composite API, Bulk API, Apex Callouts, Named Credentials, External Credentials, OAuth 2.0, Platform Events, Webhooks, MuleSoft Integration Patterns, JSON, Data Loader, Data Migration, Data Mapping, Data Reconciliation, Workbench, External IDs, Legacy CRM Migration
+DevOps & Security: Salesforce DX, Salesforce CLI, CI/CD, Scratch Orgs, Sandboxes, Metadata API, Permission Sets, Permission Set Groups, Sharing Rules, Field-Level Security, Apex Testing, Jest
+AI & Agentforce: Agentforce Awareness, Einstein AI Awareness, AI-Assisted Case Triage, Knowledge Grounding Concepts, Agent Action Design Awareness, Einstein AI Concepts, Agentforce-Ready Workflow Design
+Programming & Tools: JavaScript, HTML, CSS, SQL, C#, ASP.NET, VS Code, Git, GitHub, Developer Console, Postman, Salesforce Inspector, Jira, Confluence, Agile/Scrum
+
+PROFESSIONAL EXPERIENCE
+
+Company: Docker, Inc.
+Title: Senior Salesforce Developer / Administrator
+Location: Seattle, Washington, United States (Remote)
+Dates: Dec 2024 – Present
+Bullets:
+Designed and developed Salesforce solutions across Sales Cloud, Service Cloud, Experience Cloud, Salesforce CPQ, Revenue Cloud-style workflows, Apex, Lightning Web Components, OmniStudio-aware guided interactions, and MuleSoft integration patterns, supporting consulting delivery, productized Salesforce applications, and client-specific CRM modernization initiatives.
+Built reusable Lightning Web Components, Apex services, selectors, domain-layer logic, custom metadata frameworks, and Salesforce Flows to support complex business workflows while reducing duplicated automation and tightly coupled trigger logic.
+Developed bulk-safe Apex using governor-limit-aware patterns, asynchronous processing, Queueable Apex, Batch Apex, Platform Events, and transaction-aware error handling for high-volume account, opportunity, entitlement, and subscription-related processing.
+Built API-driven integrations between Salesforce and external SaaS, billing, support, identity, analytics, and internal engineering platforms using REST APIs, Named Credentials, OAuth 2.0, JSON payloads, Platform Events, and event-driven integration patterns.
+Implemented modern Flow architecture using record-triggered flows, screen flows, subflows, scheduled flows, and Apex invocable actions to replace older Workflow Rules and Process Builder automation with maintainable declarative solutions.
+Contributed to Agentforce-aware service workflow planning by identifying clean CRM data sources, knowledge article dependencies, case triage logic, escalation paths, and agent action boundaries for future AI-assisted support and sales operations use cases.
+Built OmniStudio-style guided intake and service request patterns using OmniScripts, FlexCards, DataRaptor-style data mapping, and Integration Procedure concepts to simplify multi-step user interactions and reduce manual navigation across Salesforce screens.
+Supported customer and partner experiences through Experience Cloud, including authenticated access, account-specific data visibility, case/service interactions, knowledge content, and permission-based experiences.
+Engineered secure Salesforce access models using permission sets, permission set groups, sharing rules, role hierarchy, field-level security, and user-context-aware Apex to support distributed internal and external users.
+Improved release quality through Salesforce DX, Git-based source control, automated Apex testing, LWC Jest testing, deployment validation, CI/CD pipelines, code reviews, and sandbox-based release practices.
+Troubleshot production issues involving governor limits, Flow recursion, LWC errors, CPQ rule behavior, asynchronous transactions, integration failures, record locking, data skew, sharing access, LWC rendering, and API authentication.
+Contributed to emerging Salesforce AI use cases by structuring CRM data, knowledge sources, actions, security boundaries, and automation so service and sales workflows can support Agentforce and Einstein-assisted experiences.
+
+Company: Amazon Web Services (AWS)
+Title: Senior Salesforce Developer / Administrator
+Location: Seattle, Washington, United States
+Dates: Jul 2023 – Dec 2024
+Bullets:
+Designed and delivered Salesforce applications supporting enterprise account management, customer engagement, opportunity workflows, service operations, partner processes, and internal sales productivity.
+Developed Apex classes, triggers, Lightning Web Components, SOQL queries, Queueable Apex, Batch Apex, and platform events for complex workflow orchestration and large-volume CRM processing.
+Built LWC-based user interfaces for account intelligence, customer engagement activities, guided operations, approvals, service interactions, and business process dashboards.
+Configured Service Cloud workflows for ticket intake, queues, assignment rules, escalation rules, entitlement-style SLA visibility, service history, knowledge access, approval tracking, and operational reporting.
+Created Experience Cloud portal features for secure request submission, case status visibility, file uploads, knowledge article access, client communication, and self-service support, reducing email-based follow-ups by approximately 20%.
+Designed Salesforce integrations with cloud-hosted and enterprise services using REST APIs, Apex callouts, OAuth authentication, Named Credentials, asynchronous integration patterns, and JSON-based contracts.
+Implemented event-driven integration patterns using Platform Events and Change Data Capture concepts to reduce tightly coupled point-to-point processing between Salesforce and downstream systems.
+Applied Agentforce-aware thinking to service operations by improving case categorization, knowledge article structure, routing rules, and support data quality so future AI-assisted case triage and self-service responses could rely on cleaner Salesforce records.
+Modernized declarative automation by migrating legacy workflow logic toward record-triggered Flow, scheduled Flow, reusable subflows, custom metadata, and Apex invocable actions.
+Supported scalable security models using profiles, permission sets, permission set groups, sharing rules, role hierarchy, object permissions, and field-level security for enterprise user populations.
+Built operational reports and dashboards for account activity, opportunity progression, service trends, integration failures, workflow exceptions, data quality, and leadership visibility.
+Participated in architecture reviews covering Salesforce governor limits, API consumption, transaction boundaries, asynchronous processing, integration resiliency, data ownership, and platform scalability.
+Supported Agile delivery through backlog refinement, technical design, peer review, automated testing, UAT, deployment validation, release support, and post-production monitoring.
+
+Company: Amazon Web Services (AWS)
+Title: Salesforce Developer
+Location: Seattle, Washington, United States
+Dates: Oct 2021 – Jul 2023
+Bullets:
+Developed Java Spring Boot services for subscription billing and transaction workflows, integrating customer account data with downstream financial and licensing platforms.
+Built RESTful APIs supporting payment records, billing status, account adjustments, and exception handling, reducing manual reconciliation effort by 15.8%.
+Implemented validation, audit logging, and secure service-to-service integrations, improving traceability across financial transactions and customer account changes in production.
+Optimized SQL queries and backend processing for transaction-heavy workflows, lowering average data retrieval latency by 13.4% across operational support applications.
+Created Angular components for internal operations dashboards, enabling users to review billing history, transaction status, exceptions, and reconciliation information securely.
+Expanded JUnit and integration test coverage for Java services, reducing regression issues by 11.2% while supporting more predictable release cycles.
+Supported pre-sales and solutioning discussions by providing technical input on Salesforce feasibility, integration options, MuleSoft-supported API patterns, data migration approach, reusable component patterns, configuration tradeoffs, and implementation complexity.
+Collaborated with architects and business stakeholders to translate complex billing requirements into maintainable microservices, REST APIs, and documented technical designs.
+Diagnosed production defects across Java, Spring Boot, SQL, and API integrations, restoring stable processing and improving operational support for financial workflows.
+
+Company: Deloitte Consulting
+Title: Salesforce Developer
+Location: Gilbert, Arizona, United States
+Dates: Feb 2019 – Sep 2021
+Bullets:
+Supported Salesforce configuration and development for insurance service and customer management workflows, including account servicing, case management, reporting, dashboards, user access, and production support.
+Built and maintained Apex triggers, Visualforce pages, validation rules, workflow rules, reports, custom fields, profiles, permission sets, role hierarchy, field-level security, sharing settings, data cleanup, testing, and deployment support.
+Supported healthcare CRM administration and development activities involving case management configuration, custom fields, reports, dashboards, workflow rules, validation rules, user access updates, data quality review, production troubleshooting, and user support.
+Developed Java and Spring backend services supporting university financial administration workflows, including payment records, fund transfers, approvals, and account reconciliation processes.
+Built RESTful APIs and database integrations for finance applications, improving transaction-data availability and reducing manual lookup effort by 12.5%.
+Implemented business validation, exception handling, and audit logging for sensitive financial operations, strengthening data integrity and traceability across administrative systems.
+Created Angular-based internal interfaces for finance users, supporting form validation, role-based access, transaction review, and exception-resolution workflows across departments.
+Optimized SQL queries and Java service logic for high-volume administrative records, improving average processing performance by 10.7% during reporting periods.
+Prepared technical documentation, supported production debugging, and collaborated with analysts to translate financial business rules into maintainable Java application components.
+
+Company: Arizona State University – W. P. Carey School of Business
+Title: IT Support Specialist
+Location: Tempe, Arizona, United States
+Dates: Jun 2016 – Dec 2018
+Bullets:
+Provided enterprise technical support to more than 200 faculty and staff, troubleshooting workstation, application, network, account-access, classroom technology, and peripheral issues.
+Diagnosed hardware, software, connectivity, authentication, and security-related incidents while documenting resolutions and escalating complex problems to senior technical teams.
+Assisted users with account access, enterprise applications, device configuration, system updates, and secure computing practices.
+Collaborated with senior technicians and university IT teams in an Agile-style service environment to resolve recurring technical issues and improve end-user support processes.
+Maintained technical documentation and contributed to standardized troubleshooting procedures for common support and infrastructure issues.
+
+Company: EY
+Title: Risk Advisory Intern
+Location: Greater Phoenix Area
+Dates: Jun 2018 – Aug 2018
+Bullets:
+Reviewed internal controls, technical documentation, system configurations, and technology processes while supporting risk assessments for three Fortune 500 organizations.
+Performed walkthroughs and control testing to identify deficiencies related to access management, operational controls, system processes, and technology governance.
+Tested more than 20 IT processes through independent testing and re-performance while documenting evidence, observations, and control results.
+Collaborated with senior consultants and client stakeholders to gather evidence, discuss findings, and support technology risk and compliance engagements.
+
+CERTIFICATIONS
+Salesforce Certified Platform Developer II
+Salesforce Certified Application Architect
+Salesforce Certified Data Architecture & Management Designer
+Salesforce Certified Sharing and Visibility Designer
+Vlocity Platform Developer
+Salesforce Certified Platform App Builder
+Salesforce Certified Administrator
+Salesforce Certified Platform Developer I
+
+EDUCATION
+School: W. P. Carey School of Business – Arizona State University
+Degree: Bachelor of Science (B.S.)
+Field: Business Data Analytics
+Degree: Bachelor's degree
+Field: Computer and Information Systems
+Dates: 2015 – 2018
