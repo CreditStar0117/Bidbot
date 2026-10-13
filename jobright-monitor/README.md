@@ -424,7 +424,7 @@ comment.
 ### Resume styles
 
 **Resume style**, its own tab in Settings next to **ChatGPT setting**, picks
-the layout. Four ship:
+the layout. Five ship:
 
 | Style  | Looks like |
 |--------|------------|
@@ -432,6 +432,7 @@ the layout. Four ship:
 | `SF-1` | Navy caps name and section labels, sans-serif; every section is a label-left/content-right row with dates hard right and a hairline under each row; skills flow into two bulleted columns |
 | `SF-2` | Blue headline and headings, "Company \| Role" in blue italics, dates before location |
 | `DA-1` | Classic serif: centred small-caps blue name under a blue rule, contact lines split by ◆, centred small-caps headings with a rule either side, "Role, dates" over "Company - Location", skills as bullets in two columns (one column in the PDF) |
+| `FS-1` | Shown as **FS-style-1**. Centred black name, bold capitals title, a serif contact line with each entry labelled in bold ("**Email**: …  **Location**: …"), each section under a full-width double rule with a bold capitals heading, "Role \| Company" in dark navy over small grey dates (the location is filled but not shown), justified body, bulleted skills, one line per school |
 
 They are interchangeable — every style carries the same holes and is filled
 from the same answer, so switching is purely cosmetic and takes
@@ -459,7 +460,10 @@ usual.
   file missing any of them is refused, with the missing ones named. The header
   (`h1.name`, `.title`, `.contact`), education (`.edu-item`) and
   certifications (`.cert-item`) are filled where the file has them and left
-  alone where it does not. A style added before job blocks existed still
+  alone where it does not. A `.contact` line holding a `<span class="key">`
+  (as `FS-1`'s does) gets every entry labelled with a copy of that span,
+  named for what the entry is — Email, Phone, LinkedIn, GitHub, Website, and
+  Location for anything else. A style added before job blocks existed still
   builds, keeping its own employer lines, with a warning.
 - Adding a file with the same name again replaces that style, and the next job
   uses the new file. A built-in name (`DE-1`, `SF-1`) is refused.
@@ -590,6 +594,7 @@ to `0` — it is the only place the threshold appears.
 | `resume_temples/resume-template-sf1.html` | The same resume, style `SF-1` |
 | `resume_temples/resume-template-sf2.html` | Style `SF-2`: blue headline and headings, "Company \| Role" in blue italics, dates before location |
 | `resume_temples/resume-template-da1.html` | Style `DA-1`: classic serif, centred small-caps name and headings, a rule either side of each heading |
+| `resume_temples/resume-template-fs1.html` | Style `FS-1` (FS-style-1): centred header with a labelled contact line, a double rule over each capitals heading, "Role \| Company" in navy |
 
 ## Load it
 

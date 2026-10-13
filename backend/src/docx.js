@@ -174,8 +174,10 @@ function paragraph(
     const drawn = edges
       .map(([side, edge]) => {
         // Word counts border width in eighths of a point, and wants at least 2.
-        const size = Math.max(2, Math.round(edge.width * 8));
-        return `<w:${side} w:val="single" w:sz="${size}" w:space="${side === 'left' ? 4 : 1}" w:color="${edge.color}"/>`;
+        // A double border's width is each of its lines, a third of the CSS one.
+        const size = Math.max(2, Math.round((edge.double ? edge.width / 3 : edge.width) * 8));
+        const kind = edge.double ? 'double' : 'single';
+        return `<w:${side} w:val="${kind}" w:sz="${size}" w:space="${side === 'left' ? 4 : 1}" w:color="${edge.color}"/>`;
       })
       .join('');
     parts.push(`<w:pBdr>${drawn}</w:pBdr>`);
@@ -221,13 +223,13 @@ function rightColumn(node, style) {
 
 const isBold = (style) => Number(style['font-weight']) >= 600 || style['font-weight'] === 'bold';
 
-/** "1px solid var(--rule)" -> { width, color } for a paragraph border. */
+/** "1px solid var(--rule)" -> { width, color, double } for a paragraph border. */
 function edge(value, variables) {
   const raw = String(value ?? '').trim();
   if (!raw || raw === 'none' || raw === '0') return null;
   const width = points((raw.match(/(-?[\d.]+(?:px|pt|mm|in)?)/) || [])[1], variables) || 1;
   const ink = colour((raw.match(/var\([^)]*\)|#[0-9a-f]{3,6}|rgba?\([^)]*\)/i) || [])[0], variables);
-  return { width, color: hex(ink) || DEFAULT_INK };
+  return { width, color: hex(ink) || DEFAULT_INK, double: /\bdouble\b/i.test(raw) };
 }
 
 /**
@@ -248,15 +250,26 @@ function styledBlocks(html) {
 
   const sizeOf = (style) => points(style['font-size'] || `${baseSize}pt`, variables, baseSize) || baseSize;
 
-  /** Flatten a node's inline descendants into runs carrying their own style. */
+  /**
+   * Flatten a node's inline descendants into runs carrying their own style.
+   *
+   * Whitespace collapses as HTML collapses it: runs of spaces, tabs and line
+   * breaks, but never a no-break space -- so a gap written as &nbsp; (FS-1's
+   * contact line) survives even in a run that holds nothing else. Whitespace
+   * alone between two inline siblings is the one space a browser shows there
+   * (FS-1's degrees, one per source line); at either end it is nothing.
+   */
   const runsOf = (node, style, ancestors) => {
     const out = [];
-    for (const child of node.children || []) {
+    const children = node.children || [];
+    children.forEach((child, index) => {
       if (child.tag === '#text') {
         const text = style['text-transform'] === 'uppercase' ? child.text.toUpperCase() : child.text;
-        if (text.trim()) {
+        const between =
+          index > 0 && index < children.length - 1 && !isBlock(children[index - 1]) && !isBlock(children[index + 1]);
+        if (/[^ \t\n\r\f]/.test(text) || (text && between)) {
           out.push(
-            run(text.replace(/\s+/g, ' '), {
+            run(text.replace(/[ \t\n\r\f]+/g, ' '), {
               bold: isBold(style),
               italic: style['font-style'] === 'italic',
               smallCaps: style['font-variant'] === 'small-caps',
@@ -265,12 +278,12 @@ function styledBlocks(html) {
             }),
           );
         }
-        continue;
+        return;
       }
-      if (isBlock(child)) continue; // handled as its own paragraph
+      if (isBlock(child)) return; // handled as its own paragraph
       const childStyle = computeStyle(child, [...ancestors, node], sheet, style);
       out.push(...runsOf(child, childStyle, [...ancestors, node]));
-    }
+    });
     return out;
   };
 
