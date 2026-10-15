@@ -114,7 +114,8 @@ const RESUME_STYLES = {
   "SF-1": "resume_temples/resume-template-sf1.html",
   "SF-2": "resume_temples/resume-template-sf2.html",
   "DA-1": "resume_temples/resume-template-da1.html",
-  "FS-1": "resume_temples/resume-template-fs1.html"
+  "FS-1": "resume_temples/resume-template-fs1.html",
+  "FS-2": "resume_temples/resume-template-fs2.html"
 };
 
 const DEFAULT_RESUME_STYLE = "DE-1";

@@ -424,7 +424,7 @@ comment.
 ### Resume styles
 
 **Resume style**, its own tab in Settings next to **ChatGPT setting**, picks
-the layout. Five ship:
+the layout. Six ship:
 
 | Style  | Looks like |
 |--------|------------|
@@ -433,6 +433,7 @@ the layout. Five ship:
 | `SF-2` | Blue headline and headings, "Company \| Role" in blue italics, dates before location |
 | `DA-1` | Classic serif: centred small-caps blue name under a blue rule, contact lines split by ◆, centred small-caps headings with a rule either side, "Role, dates" over "Company - Location", skills as bullets in two columns (one column in the PDF) |
 | `FS-1` | Shown as **FS-style-1**. Centred black name, bold capitals title, a serif contact line with each entry labelled in bold ("**Email**: …  **Location**: …"), each section under a full-width double rule with a bold capitals heading, "Role \| Company" in dark navy over small grey dates (the location is filled but not shown), justified body, bulleted skills, one line per school |
+| `FS-2` | Shown as **FS-style-2**. All serif: centred bold name over a centred "email \| location" contact line (no headline), centred bold capitals headings over a thin full-width rule, skills as bullets with a bold label, each role on one line — company in bold dark teal, a pale dash, then "Role \| dates" in bold black (the location is filled but not shown) — and education in grey with the years hard right |
 
 They are interchangeable — every style carries the same holes and is filled
 from the same answer, so switching is purely cosmetic and takes
@@ -595,6 +596,7 @@ to `0` — it is the only place the threshold appears.
 | `resume_temples/resume-template-sf2.html` | Style `SF-2`: blue headline and headings, "Company \| Role" in blue italics, dates before location |
 | `resume_temples/resume-template-da1.html` | Style `DA-1`: classic serif, centred small-caps name and headings, a rule either side of each heading |
 | `resume_temples/resume-template-fs1.html` | Style `FS-1` (FS-style-1): centred header with a labelled contact line, a double rule over each capitals heading, "Role \| Company" in navy |
+| `resume_temples/resume-template-fs2.html` | Style `FS-2` (FS-style-2): all serif, centred capitals headings over a thin rule, "Company – Role \| dates" with the company in teal |
 
 ## Load it
 
