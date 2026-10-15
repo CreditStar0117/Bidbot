@@ -1347,6 +1347,16 @@ function parseModelAnswer(raw) {
   }
 
   if (!data) {
+    // The prompt's screening answer: not a malformed reply, so say what the
+    // model gave as its reason rather than blaming the prompt's format.
+    const si = declarationValueAt(src, "skip");
+    if (!declared && si !== -1 && QUOTES[src[si]]) {
+      const reason = readStringLiteral(src, si).value.trim();
+      throw new Error(
+        `the model skipped this job: "${reason}" — if the description has no such requirement, generate again`
+      );
+    }
+
     // Two different problems, fixed in two different places, so they get two
     // different messages.
     throw new Error(
