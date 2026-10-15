@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Andreasson Jonas - Senior Back-End Engineer</title>
+  <script src="./data.js"></script>
+  <style>
+    /* FS-1: a centred header -- black sans name, bold capitals title, a serif
+       contact line whose entries are labelled in bold sans ("Email: ...") --
+       then each section under a full-width double rule with a bold capitals
+       heading. Each role is "Role | Company" in dark navy over the dates in
+       small grey type; the location is filled but not shown. Body text is
+       justified, skills are a bulleted list, and each school is one line.
+
+       Written for the backend's PDF renderer as well as the browser: class and
+       tag selectors only (no #ids, no ::before/::marker, no > + ~), unitless
+       line-heights, and hex colours. Vertical spacing is margin-top and
+       margin-bottom longhands, because the .docx reads only those, and sits on
+       one side of each gap only, because the PDF does not collapse margins.
+       The PDF and .docx draw the double rules but not the justification. */
+    :root {
+      --ink: #000000;
+      --navy: #151d2c;
+      --muted: #444444;
+      --rule: #111111;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0 auto;
+      padding: 72px 70px 56px;
+      max-width: 8.5in;
+      font-family: Calibri, Carlito, "Segoe UI", Arial, sans-serif;
+      font-size: 14.5px;
+      line-height: 1.4;
+      color: var(--ink);
+      background: #ffffff;
+    }
+
+    a {
+      color: var(--ink);
+      text-decoration: none;
+    }
+
+    /* ---------- Header ---------- */
+    h1.name {
+      margin-top: 0;
+      margin-bottom: 2px;
+      font-family: Arial, "Liberation Sans", Helvetica, sans-serif;
+      font-size: 32px;
+      font-weight: 700;
+      line-height: 1.15;
+      text-align: center;
+    }
+
+    .title {
+      margin-top: 0;
+      margin-bottom: 2px;
+      font-size: 16px;
+      font-weight: 700;
+      line-height: 1.3;
+      text-transform: uppercase;
+      text-align: center;
+    }
+
+    /* Entries are split by no-break spaces rather than a margin, so the gap
+       survives into the .docx, which drops a plain space standing alone. */
+    .contact {
+      margin-top: 0;
+      margin-bottom: 0;
+      font-family: "Times New Roman", Times, "Liberation Serif", serif;
+      font-size: 14.5px;
+      line-height: 1.3;
+      text-align: center;
+    }
+
+    .contact .key {
+      font-family: Calibri, Carlito, "Segoe UI", Arial, sans-serif;
+      font-weight: 700;
+    }
+
+    /* ---------- Sections ---------- */
+    /* Two thin lines, a line's width apart, across the whole text width. */
+    hr.rule {
+      height: 0;
+      margin-top: 14px;
+      margin-bottom: 6px;
+      border: 0;
+      border-top: 3px double var(--rule);
+      break-after: avoid;
+      page-break-after: avoid;
+    }
+
+    h2.section {
+      margin-top: 0;
+      margin-bottom: 0;
+      font-size: 18px;
+      font-weight: 700;
+      line-height: 1.2;
+      letter-spacing: 0.2px;
+      text-transform: uppercase;
+      break-after: avoid;
+      page-break-after: avoid;
+    }
+
+    .summary {
+      margin-top: 12px;
+      margin-bottom: 0;
+      padding-left: 26px;
+      text-align: justify;
+    }
+
+    /* ---------- Experience ---------- */
+    .job {
+      margin-top: 14px;
+    }
+
+    .job-head {
+      padding-left: 14px;
+      break-inside: avoid;
+      page-break-inside: avoid;
+      break-after: avoid;
+      page-break-after: avoid;
+    }
+
+    .job-line {
+      margin-top: 0;
+      margin-bottom: 0;
+      font-size: 16px;
+      font-weight: 700;
+      line-height: 1.3;
+      color: var(--navy);
+    }
+
+    .job-dates {
+      margin-top: 1px;
+      margin-bottom: 0;
+      font-size: 12px;
+      line-height: 1.3;
+      color: var(--muted);
+    }
+
+    /* The builder fills every role's location; this style leaves it unseen. */
+    .job-place {
+      display: none;
+    }
+
+    ul {
+      margin-top: 6px;
+      margin-bottom: 0;
+      padding-left: 40px;
+      list-style: disc;
+    }
+
+    ul li {
+      margin-top: 0;
+      margin-bottom: 1px;
+      text-align: justify;
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+
+    /* ---------- Education ---------- */
+    .edu-item {
+      margin-top: 12px;
+      margin-bottom: 0;
+      padding-left: 7px;
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+
+    .school {
+      font-weight: 700;
+    }
+
+    /* ---------- Certifications ---------- */
+    ul.certs {
+      margin-top: 12px;
+    }
+
+    /* ---------- Skills ---------- */
+    .skills {
+      margin-top: 12px;
+      padding-left: 40px;
+    }
+
+    .skills p {
+      display: list-item;
+      list-style: disc;
+      margin-top: 0;
+      margin-bottom: 1px;
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+
+    @media print {
+      body {
+        padding: 0;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1 class="name">Andreasson Jonas</h1>
+  <p class="title">Senior Back-End Engineer</p>
+  <!-- Every entry gets a copy of the first key span, named for what the entry
+       is, and the entries are split by the first sep span. -->
+  <p class="contact">
+    <span class="key">Email</span>: andreasson.jonas.dev@outlook.com<span class="sep">&nbsp;&nbsp;&nbsp;</span><span
+      class="key">Location</span>: Borås, Sweden
+  </p>
+
+  <hr class="rule">
+  <h2 class="section">Profile</h2>
+  <div class="section-body">
+    <p class="summary" id="summary">Senior Software Engineer with 11+ years delivering C#/.NET microservices using gRPC,
+      Docker, Kubernetes, and event-driven messaging for product backends and platform services. Core strengths include
+      DDD modeling, reliable async processing, schema-safe service contracts, and pragmatic operational practices that
+      keep systems stable under real traffic. Drives outcomes by applying idempotent consumers, retry/backoff workers,
+      and outbox-style event publishing to prevent duplication and reduce incident fallout. Targeting a remote
+      microservices role owning backend architecture where resilience, clear boundaries, and delivery speed improve
+      customer trust and team throughput.</p>
+  </div>
+
+  <hr class="rule">
+  <h2 class="section">Employment History</h2>
+  <div class="section-body">
+
+    <div class="job">
+      <div class="job-head">
+        <p class="job-line"><span class="role">Senior Back-End Engineer</span> | <span class="company">The Software
+            House</span></p>
+        <p class="job-dates"><span class="dates">Nov 2023 — Present</span></p>
+        <p class="job-place"><span class="location">Remote</span></p>
+      </div>
+      <ul data-exp="0">
+        <li>Spearheaded the Platform Billing squad’s BillingHub microservices, replacing REST-heavy flows with gRPC
+          contracts and reducing timeout spikes during nightly invoice finalization runs.</li>
+        <li>Eliminated duplicate charges by enforcing idempotency keys, consumer dedupe tables, and retry/backoff workers
+          across Azure Service Bus events, stabilizing settlement when upstream gateways flapped.</li>
+        <li>Architected bounded contexts using DDD aggregates and CQRS read models in .NET, improving change safety while
+          keeping cross-service dependencies explicit and reviewable for senior stakeholders.</li>
+        <li>Modeled an immutable event log with outbox-style publishing to Kafka, enabling replayable workflows and
+          cleaner recovery paths during partial writes and cross-region delivery delays.</li>
+        <li>Containerized services with Docker and deployed via Kubernetes and Helm, tightening rollout controls with
+          canary gates that reduced customer-visible regressions without slowing iteration speed.</li>
+        <li>Instituted gRPC contract testing with Protobuf schema checks and compatibility rules, preventing breaking
+          changes and improving partner integration stability across versioned endpoints.</li>
+      </ul>
+    </div>
+
+    <div class="job">
+      <div class="job-head">
+        <p class="job-line"><span class="role">Back-End Engineer</span> | <span class="company">Spotify</span></p>
+        <p class="job-dates"><span class="dates">June 2020 — Oct 2023</span></p>
+        <p class="job-place"><span class="location">Stockholm, Sweden</span></p>
+      </div>
+      <ul data-exp="1">
+        <li>Directed the Developer Productivity group’s Backstage service platform, exposing internal service metadata
+          through .NET APIs and gRPC endpoints consumed by engineers across multiple domains.</li>
+        <li>Unified catalog ingestion with event-driven pipelines over Kafka, ensuring ownership and dependency graphs
+          stayed current while handling bursty updates without overwhelming downstream stores.</li>
+        <li>Introduced background processors for scorecard computation and metadata backfills, using retry policies and
+          dead-letter routing to keep portal freshness consistent during peak deploy cycles.</li>
+        <li>Calibrated Kubernetes resource limits, HPA rules, and queue backpressure to prevent thundering-herd failures,
+          improving stability when high fan-out requests hit catalog endpoints.</li>
+      </ul>
+    </div>
+
+    <div class="job">
+      <div class="job-head">
+        <p class="job-line"><span class="role">Back-End Engineer</span> | <span class="company">Klarna</span></p>
+        <p class="job-dates"><span class="dates">Aug 2017 — May 2020</span></p>
+        <p class="job-place"><span class="location">Stockholm, Sweden</span></p>
+      </div>
+      <ul data-exp="2">
+        <li>Engineered Klarna Checkout configuration services in .NET using DDD entities and gRPC, enabling consistent
+          merchant setup flows across regions with varying payment rule constraints.</li>
+        <li>Optimized PostgreSQL access patterns and Redis cache-aside reads for session lookups, improving
+          responsiveness during campaign spikes while keeping write paths auditable for support investigations.</li>
+      </ul>
+    </div>
+
+    <div class="job">
+      <div class="job-head">
+        <p class="job-line"><span class="role">Web Developer</span> | <span class="company">Ericsson</span></p>
+        <p class="job-dates"><span class="dates">Aug 2014 — June 2017</span></p>
+        <p class="job-place"><span class="location">Stockholm, Sweden</span></p>
+      </div>
+      <ul data-exp="3">
+        <li>Delivered Ericsson Network Manager Fault Management services in .NET, processing alarm events and topology
+          updates through message queues while exposing operator workflows via stable REST APIs.</li>
+        <li>Streamlined ingestion with batching, indexing, and consumer throttling, reducing CPU churn during event storms
+          and keeping dashboards responsive across multi-tenant operator deployments.</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <hr class="rule">
+  <h2 class="section">Education</h2>
+  <!-- The first edu item is the pattern: copied once per EDUCATION entry, with
+       its first degree span copied once per degree, as "Degree, Field". The
+       degree span keeps a line of its own so its copies indent cleanly. -->
+  <div class="section-body edu">
+    <p class="edu-item"><span class="school">KTH Royal Institute of Technology</span>,
+      <span class="degree">Bachelor’s Degree in Computer Science</span>,
+      <span class="year">Sep 2010 – Jun 2014</span></p>
+  </div>
+
+  <!-- The first cert item is the pattern, copied once per CERTIFICATIONS
+       entry. The whole section is removed when there are none. -->
+  <div class="cert-section">
+    <hr class="rule">
+    <h2 class="section">Certifications</h2>
+    <div class="section-body">
+      <ul class="certs">
+        <li class="cert-item">Microsoft Certified: Azure Developer Associate</li>
+        <li class="cert-item">Certified Kubernetes Application Developer (CKAD)</li>
+      </ul>
+    </div>
+  </div>
+
+  <hr class="rule">
+  <h2 class="section">Skills</h2>
+  <div class="section-body">
+    <div class="skills" id="skills">
+      <p>Languages: C#, SQL, PowerShell, Bash, TypeScript, Java</p>
+      <p>Backend APIs: .NET, ASP.NET Core, gRPC, REST, OpenAPI, Protobuf</p>
+      <p>Distributed Messaging: Kafka, RabbitMQ, Azure Service Bus, Pub/Sub, Consumer Groups, Dead-letter Handling</p>
+      <p>Architecture: Domain-Driven Design, Aggregates, Repositories, CQRS, Transactional Outbox, Idempotency</p>
+      <p>Containers Orchestration: Docker, Kubernetes, Helm</p>
+      <p>Data Stores: PostgreSQL, Redis</p>
+      <p>Cloud Infrastructure: Azure, AWS, Terraform, IAM/RBAC</p>
+      <p>Delivery, Reliability Ops: CI/CD, Blue-Green Deployments, Canary Releases, Rollback Automation, Runbooks,
+        Incident Response</p>
+      <p>Observability: OpenTelemetry, Structured Logging, Metrics, Alerting, Tracing</p>
+      <p>Security: OAuth2, JWT, Secure API Design, Least Privilege, Audit Logging</p>
+      <p>Quality Engineering: Unit Integration Testing, Contract Testing, Performance Testing, Refactoring, Database
+        Migrations</p>
+    </div>
+  </div>
+
+  <script type="module">
+    // Renders the page from the `resume` global that data.js declares, the
+    // same way the extension fills this template when it builds a resume. The
+    // extension strips both scripts before building.
+    if (typeof resume !== "undefined") render(resume);
+
+    function render(resume) {
+      const $ = (sel, root = document) => root.querySelector(sel);
+      const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
+      const isLink = (s) => /^https?:\/\//i.test(s) || /^(www\.)?[\w-]+\.(com|io|dev|me)\//i.test(s);
+      const siteOf = (s) => (/linkedin\.com/i.test(s) ? "LinkedIn" : /github\.com/i.test(s) ? "GitHub" : null);
+      const bareUrl = (s) => s.replace(/^https?:\/\/(www\.)?/i, "").replace(/\/$/, "");
+
+      // What an entry is: a link by its site, an email by its @, a phone by
+      // its digits, and anything else the location.
+      const labelOf = (s) => {
+        if (isLink(s)) return siteOf(s) || "Website";
+        if (s.includes("@")) return "Email";
+        if (/^[\d\s()+.-]+$/.test(s) && (s.match(/\d/g) || []).length >= 7) return "Phone";
+        return "Location";
+      };
+
+      // Header: CONTACT is [name, title, location, phone, email, link, ...],
+      // each entry labelled, split by the template's own gap.
+      const [name, title, ...contact] = resume.CONTACT || [];
+      if (name) {
+        $("h1.name").textContent = name;
+        document.title = title ? `${name} - ${title}` : name;
+      }
+      if (title) $(".title").textContent = title;
+      if (contact.length) {
+        const line = $("p.contact");
+        const gap = $(".sep", line);
+        line.replaceChildren();
+        contact.forEach((item, i) => {
+          if (i) line.append(gap.cloneNode(true));
+          const key = document.createElement("span");
+          key.className = "key";
+          key.textContent = labelOf(item);
+          line.append(key, ": ");
+          if (isLink(item)) {
+            const a = document.createElement("a");
+            a.href = /^https?:\/\//i.test(item) ? item : `https://${item}`;
+            a.textContent = bareUrl(item);
+            line.append(a);
+          } else {
+            line.append(item);
+          }
+        });
+      }
+
+      $("#summary").textContent = resume.SUMMARY || "";
+
+      // Skills: text before the first ":" is the label, the colon its own span.
+      const skills = $("#skills");
+      skills.replaceChildren();
+      for (const text of resume.SKILLS || []) {
+        const p = document.createElement("p");
+        const i = text.indexOf(":");
+        if (i === -1) {
+          p.textContent = text;
+        } else {
+          const label = document.createElement("span");
+          label.className = "label";
+          label.textContent = text.slice(0, i);
+          const colon = document.createElement("span");
+          colon.className = "colon";
+          colon.textContent = ":";
+          p.append(label, colon, " " + text.slice(i + 1).trim());
+        }
+        skills.appendChild(p);
+      }
+
+      // Experience: the first job is the pattern — [company, title, location, dates, ...bullets].
+      const jobs = $$(".job");
+      (resume.EXPERIENCE || []).forEach(([company, role, location, dates, ...bullets], i) => {
+        const job = jobs[0].cloneNode(true);
+        $(".company", job).textContent = company || "";
+        $(".role", job).textContent = role || "";
+        $(".location", job).textContent = location || "";
+        $(".dates", job).textContent = dates || "";
+        const ul = $("ul[data-exp]", job);
+        ul.dataset.exp = i;
+        ul.replaceChildren();
+        for (const text of bullets) {
+          const li = document.createElement("li");
+          li.textContent = text;
+          ul.appendChild(li);
+        }
+        jobs[0].before(job);
+      });
+      jobs.forEach((j) => j.remove());
+
+      // Education: [school, [[degree, field], ...], year], one line per school.
+      const schools = $$(".edu-item");
+      if (resume.EDUCATION?.length) {
+        for (const [school, degrees, year] of resume.EDUCATION) {
+          const item = schools[0].cloneNode(true);
+          $(".school", item).textContent = school || "";
+          $(".year", item).textContent = year || "";
+          const spans = $$(".degree", item);
+          (degrees || []).forEach((d, k) => {
+            const span = spans[0].cloneNode(true);
+            span.textContent = Array.isArray(d) ? d.filter(Boolean).join(", ") : d;
+            if (k) spans[0].before(" ");
+            spans[0].before(span);
+          });
+          spans.forEach((s) => s.remove());
+          schools[0].before(item);
+        }
+        schools.forEach((s) => s.remove());
+      }
+
+      // Certifications: one per name; with none, the whole section goes.
+      const certs = $$(".cert-item");
+      if (resume.CERTIFICATIONS?.length) {
+        for (const cert of resume.CERTIFICATIONS) {
+          const item = certs[0].cloneNode(true);
+          item.textContent = cert;
+          certs[0].before(item);
+        }
+        certs.forEach((c) => c.remove());
+      } else {
+        $(".cert-section")?.remove();
+      }
+    }
+  </script>
+
+</body>
+
+</html>

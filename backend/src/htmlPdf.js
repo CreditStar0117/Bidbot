@@ -11,7 +11,8 @@ import { applyFont, encodeFor } from './pdf.js';
  * rather than duplicated in a renderer.
  *
  * It is a small subset of CSS, sized to the documents this server generates:
- * block flow with margins and padding, backgrounds and single-edge borders,
+ * block flow with margins and padding, backgrounds and single-edge borders
+ * (solid or double),
  * inline runs with their own weight and colour, small caps, centred lines,
  * unordered lists, and the page-break hints; a serif stack is drawn in Times.
  * No floats and no positioning; of grid, only the one row the resumes use --
@@ -260,13 +261,17 @@ export function colour(value, variables) {
   return null;
 }
 
-/** "2px solid var(--teal)" -> { width, colour }. */
+/** "2px solid var(--teal)" -> { width, colour, double }. */
 function border(value, variables) {
   const raw = resolveVar(value ?? '', variables).trim();
   if (!raw || raw === '0' || raw === 'none') return null;
   const width = points((raw.match(/(-?[\d.]+(?:px|pt|mm|in)?)/) || [])[1], variables);
   if (!width) return null;
-  return { width, colour: colour((raw.match(/#[0-9a-f]{3,6}|rgba?\([^)]*\)/i) || [])[0], variables) || [0, 0, 0] };
+  return {
+    width,
+    colour: colour((raw.match(/#[0-9a-f]{3,6}|rgba?\([^)]*\)/i) || [])[0], variables) || [0, 0, 0],
+    double: /\bdouble\b/i.test(raw),
+  };
 }
 
 /* --- rendering -------------------------------------------------------------- */
@@ -376,6 +381,23 @@ export function renderHtmlToPdf(html, { url } = {}) {
   const advanceOf = (value) => doc.getTextWidth(value) + doc.getCharSpace() * value.length;
 
   /**
+   * A horizontal rule from `from` to `to`, centred on `y`. A double one is drawn
+   * as a browser draws it: two lines a third of its width each, a third apart.
+   */
+  const stroke = (from, to, y, { width, colour: ink, double }) => {
+    const thickness = width * MM_PER_PT;
+    doc.setDrawColor(...ink);
+    if (!double) {
+      doc.setLineWidth(thickness);
+      doc.line(from, y, to, y);
+      return;
+    }
+    doc.setLineWidth(thickness / 3);
+    doc.line(from, y - thickness / 3, to, y - thickness / 3);
+    doc.line(from, y + thickness / 3, to, y + thickness / 3);
+  };
+
+  /**
    * A text node's runs. Small caps are drawn as a browser synthesises them:
    * capitals at full size, lower-case letters as capitals at 70%.
    */
@@ -467,12 +489,16 @@ export function renderHtmlToPdf(html, { url } = {}) {
     if (trailing) width = Math.max(fullWidth - trailingWidth - gap, fullWidth / 3);
     let first = true;
 
-    // Split every run into words, keeping each word's style with it.
+    // Split every run into words, keeping each word's style with it. Spaces,
+    // tabs and line breaks collapse to one space first, as HTML collapses them
+    // -- source indentation between two inline elements is one space, not ten
+    // -- but a no-break space is kept, as it is in a browser.
     const words = [];
     for (const run of list) {
-      const value = style.transform === 'uppercase' || run.style['text-transform'] === 'uppercase'
+      const value = (style.transform === 'uppercase' || run.style['text-transform'] === 'uppercase'
         ? run.text.toUpperCase()
-        : run.text;
+        : run.text
+      ).replace(/[ \t\n\r\f]+/g, ' ');
       // A left margin opens its gap before the run and a right margin after it.
       // Both on one side would leave the element hard against its neighbour --
       // which is what a separator bullet between contact details shows first.
@@ -601,11 +627,7 @@ export function renderHtmlToPdf(html, { url } = {}) {
       const rule = border(style['border-top'] || style.border, sheet.variables);
       if (rule) {
         room(rule.width * MM_PER_PT);
-        if (state.draw) {
-          doc.setDrawColor(...rule.colour);
-          doc.setLineWidth(rule.width * MM_PER_PT);
-          doc.line(x, state.y, x + width, state.y);
-        }
+        if (state.draw) stroke(x, x + width, state.y, rule);
         state.y += rule.width * MM_PER_PT;
       }
       state.y += margin.bottom * MM_PER_PT;
@@ -666,11 +688,7 @@ export function renderHtmlToPdf(html, { url } = {}) {
     const under = border(style['border-bottom'], sheet.variables);
     if (under) {
       room(under.width * MM_PER_PT);
-      if (state.draw) {
-        doc.setDrawColor(...under.colour);
-        doc.setLineWidth(under.width * MM_PER_PT);
-        doc.line(x, state.y, x + width, state.y);
-      }
+      if (state.draw) stroke(x, x + width, state.y, under);
       state.y += under.width * MM_PER_PT;
     }
 

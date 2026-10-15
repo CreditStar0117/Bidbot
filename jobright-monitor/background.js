@@ -113,7 +113,9 @@ const RESUME_STYLES = {
   "DE-1": "resume_temples/resume-template-DE-1.html",
   "SF-1": "resume_temples/resume-template-sf1.html",
   "SF-2": "resume_temples/resume-template-sf2.html",
-  "DA-1": "resume_temples/resume-template-da1.html"
+  "DA-1": "resume_temples/resume-template-da1.html",
+  "FS-1": "resume_temples/resume-template-fs1.html",
+  "FS-2": "resume_temples/resume-template-fs2.html"
 };
 
 const DEFAULT_RESUME_STYLE = "DE-1";
@@ -906,20 +908,31 @@ function jobHtml(pattern, entry, index) {
 // label ("LinkedIn") rather than the whole URL, as the templates always did.
 const isLink = (s) => /^https?:\/\//i.test(s) || /^(www\.)?[\w-]+\.(com|io|dev|me)\//i.test(s);
 
-function linkHtml(url) {
+const siteOf = (url) => (/linkedin\.com/i.test(url) ? "LinkedIn" : /github\.com/i.test(url) ? "GitHub" : null);
+const bareUrl = (url) => url.replace(/^https?:\/\/(www\.)?/i, "").replace(/\/$/, "");
+
+function linkHtml(url, label = siteOf(url) || bareUrl(url)) {
   const href = /^https?:\/\//i.test(url) ? url : `https://${url}`;
-  const label = /linkedin\.com/i.test(url)
-    ? "LinkedIn"
-    : /github\.com/i.test(url)
-      ? "GitHub"
-      : url.replace(/^https?:\/\/(www\.)?/i, "").replace(/\/$/, "");
   return `<a href="${escapeHtml(href)}">${escapeHtml(label)}</a>`;
+}
+
+// What a contact entry is, for a style that labels each one ("Email: …"): a
+// link by its site, an email by its @, a phone by being all digits and
+// punctuation, and anything else the location — the one free-text entry.
+function contactLabel(s) {
+  if (isLink(s)) return siteOf(s) || "Website";
+  if (s.includes("@")) return "Email";
+  if (/^[\d\s()+.-]+$/.test(s) && (s.match(/\d/g) || []).length >= 7) return "Phone";
+  return "Location";
 }
 
 // CONTACT is [name, headline title, ...the rest of the header line]. The rest
 // goes on the template's contact line, in the order given, joined with the
 // separator the template already uses there. A style with a second
-// "contact links" line (SF-1) gets the links there instead.
+// "contact links" line (SF-1) gets the links there instead. A contact line
+// holding a <span class="key"> (FS-1) labels every entry with a copy of it —
+// "Email: …", "Location: …" — and a link then shows its address, since the
+// label already names the site.
 function fillContact(html, contact) {
   const [name, title, ...rest] = contact;
 
@@ -941,15 +954,20 @@ function fillContact(html, contact) {
   const linksRe = /(<p[^>]*class="contact links"[^>]*>)([\s\S]*?)(<\/p>)/;
   const sep = html.match(contactRe)?.[2].match(/<span class="sep">[\s\S]*?<\/span>/)?.[0] ||
     '<span class="sep">|</span>';
+  const key = html.match(contactRe)?.[2].match(/<span class="key">[\s\S]*?<\/span>/)?.[0];
+
+  const entryHtml = (s) => {
+    if (!key) return isLink(s) ? linkHtml(s) : escapeHtml(s);
+    const label = key.replace(/>[\s\S]*?</, `>${escapeHtml(contactLabel(s))}<`);
+    return `${label}: ${isLink(s) ? linkHtml(s, bareUrl(s)) : escapeHtml(s)}`;
+  };
 
   const splitLinks = linksRe.test(html);
-  const main = rest
-    .filter((s) => !splitLinks || !isLink(s))
-    .map((s) => (isLink(s) ? linkHtml(s) : escapeHtml(s)));
+  const main = rest.filter((s) => !splitLinks || !isLink(s)).map(entryHtml);
 
   html = html.replace(contactRe, (_m, open, _inner, close) => `${open}\n    ${main.join(sep)}\n  ${close}`);
   if (splitLinks) {
-    const links = rest.filter(isLink).map(linkHtml);
+    const links = rest.filter(isLink).map(entryHtml);
     html = html.replace(linksRe, (_m, open, _inner, close) => `${open}${links.join(sep)}${close}`);
   }
   return html;
@@ -1329,6 +1347,16 @@ function parseModelAnswer(raw) {
   }
 
   if (!data) {
+    // The prompt's screening answer: not a malformed reply, so say what the
+    // model gave as its reason rather than blaming the prompt's format.
+    const si = declarationValueAt(src, "skip");
+    if (!declared && si !== -1 && QUOTES[src[si]]) {
+      const reason = readStringLiteral(src, si).value.trim();
+      throw new Error(
+        `the model skipped this job: "${reason}" — if the description has no such requirement, generate again`
+      );
+    }
+
     // Two different problems, fixed in two different places, so they get two
     // different messages.
     throw new Error(
