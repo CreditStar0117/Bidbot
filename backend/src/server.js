@@ -215,7 +215,7 @@ app.post('/save-data', async (req, res) => {
 /**
  * Has this posting already been taken?
  *
- *   POST /get-item  { company, job_title }
+ *   POST /get-item  { company, job_title, user }
  *     -> { code: 200, msg: 'already exist' }
  *     -> { code: 401, msg: 'not exist' }
  *
@@ -223,16 +223,23 @@ app.post('/save-data', async (req, res) => {
  * reads one place for the answer and never has to treat a normal "no" as a
  * transport failure. `record` rides along for callers that want to know what
  * was found -- a rejected posting is still a posting that was seen before.
+ *
+ * `user` names the same tab `/save-data` files under, so the check is scoped
+ * to it: a posting one tab already holds should not stop a different tab from
+ * seeing it as new. An unrecognized or blank name checks the unassigned tab
+ * rather than falling back to a global, cross-tab check.
  */
 app.post('/get-item', (req, res) => {
   const company = String(req.body?.company || '').trim();
   const jobTitle = String(req.body?.job_title || '').trim();
+  const userName = String(req.body?.user || '').trim();
 
   if (!company || !jobTitle) {
     return res.status(400).json({ code: 400, msg: 'company and job_title are required' });
   }
 
-  const record = store.findByJob(company, jobTitle);
+  const user = userName ? store.getUserByName(userName) : null;
+  const record = store.findByJob(company, jobTitle, user ? user.id : null);
   if (!record) return res.json({ code: 401, msg: 'not exist' });
 
   return res.json({

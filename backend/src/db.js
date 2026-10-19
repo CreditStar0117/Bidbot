@@ -357,22 +357,30 @@ export class Store {
   }
 
   /**
-   * The newest record for a company and job title, or null.
+   * The newest record for a company and job title, scoped to one tab, or
+   * null.
    *
    * Matched case-insensitively on trimmed values: the same posting scraped
    * twice rarely comes back byte-identical, and a near-miss here would report
-   * a job as new when it is already in the archive.
+   * a job as new when it is already in the archive. Scoped by `userId` so
+   * that one tab's archive never blocks another tab from seeing the same
+   * posting as new -- `null` means the unassigned tab, matched against rows
+   * that are themselves unassigned (`user_id IS NULL`), not against every tab.
    */
-  findByJob(company, jobTitle) {
+  findByJob(company, jobTitle, userId = null) {
+    const userClause = userId === null ? 'user_id IS NULL' : 'user_id = ?';
+    const params = [String(company), String(jobTitle)];
+    if (userId !== null) params.push(userId);
     return (
       this.db
         .prepare(
           `SELECT * FROM records
              WHERE lower(trim(company)) = lower(trim(?))
                AND lower(trim(job_title)) = lower(trim(?))
+               AND ${userClause}
              ORDER BY id DESC LIMIT 1`,
         )
-        .get(String(company), String(jobTitle)) || null
+        .get(...params) || null
     );
   }
 

@@ -698,7 +698,10 @@ function describeFetchError(err, url) {
     : `${err?.message || err} — is ${url} running?`;
 }
 
-// Asks the collector whether it already holds this job, by company and title.
+// Asks the collector whether it already holds this job, by company and
+// title, scoped to this profile's tab -- the same `countryName` saveJob files
+// under -- so one tab's archive never suppresses a job a different tab has
+// not seen yet.
 //
 // Only the exact answer { code: 200, msg: "already exist" } suppresses the
 // save. Anything else — a different code, a different message, a non-200, or
@@ -706,9 +709,10 @@ function describeFetchError(err, url) {
 // can never silently cost you a job.
 async function checkExisting(job, signal) {
   try {
+    const profile = await getProfile();
     const { res, data } = await postJson(
       CHECK_ENDPOINT,
-      { company: job.company, job_title: job.title },
+      { company: job.company, job_title: job.title, user: profile?.countryName || "" },
       signal
     );
 
