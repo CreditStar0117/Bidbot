@@ -10,21 +10,57 @@ const RECOMMEND_PATTERNS = ORIGINS.map((o) => `${o}/jobs/recommend*`);
 // a run opens, the tabs that count as that page, and the content script that
 // reads it — both scripts answer the same messages, so everything after the
 // feed tab is shared.
-const DICE_SEARCH_URL =
-  "https://www.dice.com/jobs?countryCode=US&filters.employmentType=FULLTIME" +
-  "&filters.workplaceTypes=Remote&latitude=38.7945952&location=United+States" +
-  "&locationPrecision=Country&longitude=-106.5348379&q=data+engineer";
+//
+// Dice and Glassdoor both search by a keyword typed in the panel (Jobright's
+// recommend page has no search term at all — it is personalized, not typed).
+// A blank search falls back to the same "data engineer" the URL used to be
+// hardcoded to.
+const DEFAULT_SEARCH_TITLE = "data engineer";
 
-const GLASSDOOR_SEARCH_URL =
-  "https://www.glassdoor.com/Job/remote-data-engineer-jobs-SRCH_IL.0,6_IS11047_KO7,20.htm" +
-  "?locId=11047&locT=S&remoteWorkType=1";
+function diceSearchUrl(title) {
+  const q = String(title || "").trim() || DEFAULT_SEARCH_TITLE;
+  const params = new URLSearchParams({
+    countryCode: "US",
+    "filters.employmentType": "FULLTIME",
+    "filters.workplaceTypes": "Remote",
+    latitude: "38.7945952",
+    location: "United States",
+    locationPrecision: "Country",
+    longitude: "-106.5348379",
+    q
+  });
+  return `https://www.dice.com/jobs?${params.toString()}`;
+}
+
+// Glassdoor's SEO search URL bakes the keyword into the path twice: once as
+// a dash-joined slug, and again as character offsets (`KO<start>,<end>`) into
+// that same slug — seemingly for highlighting. Both have to move together or
+// Glassdoor serves a mismatched or empty result page.
+function glassdoorSearchUrl(title) {
+  const raw = String(title || "").trim() || DEFAULT_SEARCH_TITLE;
+  const slug = raw.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "data-engineer";
+  const prefix = "remote-";
+  const start = prefix.length;
+  const end = start + slug.length;
+  return (
+    `https://www.glassdoor.com/Job/${prefix}${slug}-jobs-SRCH_IL.0,6_IS11047_KO${start},${end}.htm` +
+    "?locId=11047&locT=S&remoteWorkType=1"
+  );
+}
+
+// Only Dice and Glassdoor take a typed search title; Jobright's url is fixed.
+function sourceUrl(sourceKey, searchTitle) {
+  if (sourceKey === "dice") return diceSearchUrl(searchTitle);
+  if (sourceKey === "glassdoor") return glassdoorSearchUrl(searchTitle);
+  return null;
+}
 
 const SOURCES = {
   jobright: { name: "Jobright", url: TARGET, patterns: RECOMMEND_PATTERNS, script: "content.js" },
-  dice: { name: "Dice", url: DICE_SEARCH_URL, patterns: ["https://www.dice.com/jobs*"], script: "content-dice.js" },
+  dice: { name: "Dice", url: diceSearchUrl(), patterns: ["https://www.dice.com/jobs*"], script: "content-dice.js" },
   glassdoor: {
     name: "Glassdoor",
-    url: GLASSDOOR_SEARCH_URL,
+    url: glassdoorSearchUrl(),
     patterns: ["https://www.glassdoor.com/Job/*"],
     script: "content-glassdoor.js"
   }
@@ -195,6 +231,12 @@ const PROFILE_DEFAULTS = {
   // archive — sent with every save so the dashboard puts it on that tab.
   // Blank leaves it off every tab there rather than guessing.
   countryName: "",
+
+  // Who this profile applies as, and the key the duplicate check is scoped to.
+  // A company this applicant has already applied to is never fetched again,
+  // while a different applicant still sees it as new. Blank is matched against
+  // the records filed with no applicant rather than against everyone's.
+  applicant: "",
 
   // Which template the resume is laid out with — a key of RESUME_STYLES.
   // Every style is filled from the same answer, so switching is purely
@@ -461,7 +503,7 @@ let visitEnabled = true;
 let saveEnabled = true;
 let visitedCount = 0;
 let savedCount = 0;
-let skippedCount = 0; // already in the collector, so never sent
+let skippedCount = 0; // company already applied to, so never fetched
 let generatedCount = 0;
 let feedTabId = null; // the recommendations tab, used as the detail tabs' opener
 
@@ -482,13 +524,141 @@ function abortRun() {
 }
 
 // ---------------------------------------------------------------------------
+// Keeping the worker alive for the length of a run
+//
+// A run is minutes long and one generation alone is allowed two of them, but a
+// Manifest V3 service worker is torn down after about 30 seconds of inactivity
+// -- and a fetch in flight does not count as activity. Every other wait in the
+// loop does, because each is a chrome.* call: opening the tab, scraping it,
+// writing the job back to storage. The OpenAI call is the one stretch of a run
+// that makes no such call, which is why a run always died there and nowhere
+// else. Nothing catches it, either: the worker is suspended mid-fetch, so the
+// loop's `finally` never runs, no status ever goes out, and the panel is left
+// reading "writing resume" over a queue that no longer exists.
+//
+// Any extension API call resets that timer. A run holds the worker open with a
+// bare one on a timer comfortably inside the 30 seconds, and lets go when it is
+// done. Held by count, not by a flag: the check queue and the visit queue run
+// at the same time, and the worker has to stay up for the slower of the two.
+// ---------------------------------------------------------------------------
+
+const KEEPALIVE_MS = 20000;
+let keepaliveTimer = null;
+let keepaliveHolds = 0;
+
+function holdWorker() {
+  keepaliveHolds += 1;
+  if (!keepaliveTimer) {
+    // Making the call is the whole point; nothing wants the answer.
+    keepaliveTimer = setInterval(() => {
+      chrome.runtime.getPlatformInfo().catch(() => {});
+    }, KEEPALIVE_MS);
+  }
+
+  let released = false;
+  return () => {
+    // A hold is released from a `finally`, and a `finally` is easy to reach
+    // twice. Letting go once is all it may ever do, or an overlapping run
+    // would drop the count below the holds still outstanding.
+    if (released) return;
+    released = true;
+    keepaliveHolds -= 1;
+    if (keepaliveHolds > 0) return;
+    clearInterval(keepaliveTimer);
+    keepaliveTimer = null;
+    keepaliveHolds = 0;
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Surviving the worker's own death
+//
+// The keepalive above holds the worker open while a run is in flight, but it
+// cannot promise to. Chrome still reclaims a worker under memory pressure, on
+// a crash, on an update — and when it does, `queue` and the flags beside it go
+// with it, because they are plain variables in a context that no longer
+// exists. That is what a run stopping after a handful of resumes looked like:
+// not an error anywhere, just a list with forty jobs still on it and nothing
+// left alive to read them.
+//
+// So the run is written down. The job list is already in storage, and a job
+// there with a link and no reading is exactly a job still owed one — the queue
+// rebuilds from that and never has to be stored twice. All that is kept beside
+// it is whether a run is on, and what it was told to do.
+//
+// An alarm is what brings the worker back. A timer dies with the worker that
+// set it; an alarm is held by Chrome and wakes the worker to deliver it, so a
+// run cut off mid-list carries on within the minute whether or not anything
+// else happens in the browser. `storage.session` rather than `local` on
+// purpose: a run should outlive its worker, not the browser it was started in.
+// ---------------------------------------------------------------------------
+
+const RUN_ALARM = "run-watchdog";
+
+async function setRun(patch) {
+  const { run } = await chrome.storage.session.get("run");
+  await chrome.storage.session.set({ run: { ...(run || {}), ...patch } });
+}
+
+async function markRunActive() {
+  await setRun({ active: true, visitEnabled, saveEnabled });
+  // One minute is the floor Chrome allows, and it is the worst case for how
+  // long a cut-off run lies still — the keepalive is what makes that rare.
+  chrome.alarms.create(RUN_ALARM, { periodInMinutes: 1 });
+}
+
+async function markRunDone() {
+  await setRun({ active: false });
+  await chrome.alarms.clear(RUN_ALARM);
+}
+
+// Puts back whatever the last worker did not live to finish.
+//
+// Safe to call at any moment: while a run is still draining there is nothing
+// to put back, and with nothing owed it closes the run out rather than leaving
+// an alarm firing for no one.
+async function resumeRun() {
+  const { run } = await chrome.storage.session.get("run");
+  if (!run?.active) {
+    await chrome.alarms.clear(RUN_ALARM);
+    return;
+  }
+  if (draining) return;
+
+  const { jobs = [] } = await chrome.storage.local.get("jobs");
+  const owed = jobs.filter((job) => job.href && !job.detail && !queued.has(job.key));
+  if (!owed.length) {
+    await markRunDone();
+    return;
+  }
+
+  // A fresh worker has no controller and no flags — both came from the START
+  // this run is a continuation of.
+  if (!runAbort) beginRun();
+  visitEnabled = run.visitEnabled !== false;
+  saveEnabled = run.saveEnabled !== false;
+
+  console.log(`[jobright] resuming a run its worker did not finish — ${owed.length} job(s) still owed`);
+  for (const job of owed) enqueue(job);
+}
+
+chrome.alarms.onAlarm.addListener((alarm) => {
+  if (alarm.name === RUN_ALARM) resumeRun();
+});
+
+// Whatever started this worker — an alarm, the panel opening, a message from a
+// feed tab — the first thing it does is find out what it inherited.
+resumeRun();
+
+// ---------------------------------------------------------------------------
 // Stage one: the duplicate filter
 //
 // Every card the feed finds is a candidate. The collector is asked about it
-// before anything else happens, and only a job it does not already have is
-// stored, shown in the list, and passed to the work queue below. A job the
-// collector has is dropped outright — never stored, never listed, never
-// opened.
+// before anything else happens, and only a company this applicant has not
+// applied to is stored, shown in the list, and passed to the work queue below.
+// A company already applied to is dropped outright — never stored, never
+// listed, and above all never fetched, so no link is opened and no generation
+// is ever spent on it.
 //
 // This is its own queue rather than a step inside drain(), because the two run
 // at completely different speeds. A /get-item call is a localhost round trip;
@@ -512,6 +682,7 @@ function enqueueCheck(job) {
 async function drainChecks() {
   if (checking) return;
   checking = true;
+  const release = holdWorker();
 
   try {
     while (checkQueue.length) {
@@ -538,10 +709,13 @@ async function drainChecks() {
         break;
       }
 
+      // This applicant has already applied to this company. The card is
+      // dropped here, which is the whole point of asking before the visit
+      // queue rather than inside it: nothing is fetched and nothing is spent.
       if (check.exists) {
         skippedCount++;
         queueStatus();
-        continue; // dropped: not stored, not shown, not opened
+        continue;
       }
 
       acceptedCount++;
@@ -554,6 +728,7 @@ async function drainChecks() {
       tellFeed({ type: "ACCEPTED", count: acceptedCount });
     }
   } finally {
+    release();
     checking = false;
     queueStatus();
   }
@@ -599,6 +774,7 @@ function queueStatus(extra = {}) {
 async function drain() {
   if (draining) return;
   draining = true;
+  const release = holdWorker();
   queueStatus();
 
   try {
@@ -661,6 +837,7 @@ async function drain() {
       if (queue.length && !signal?.aborted) await sleep(DETAIL_GAP_MS);
     }
   } finally {
+    release();
     draining = false;
     queueStatus({ drained: true });
   }
@@ -698,21 +875,29 @@ function describeFetchError(err, url) {
     : `${err?.message || err} — is ${url} running?`;
 }
 
-// Asks the collector whether it already holds this job, by company and
-// title, scoped to this profile's tab -- the same `countryName` saveJob files
-// under -- so one tab's archive never suppresses a job a different tab has
-// not seen yet.
+// Asks the collector whether this applicant has already applied to this
+// company.
 //
-// Only the exact answer { code: 200, msg: "already exist" } suppresses the
-// save. Anything else — a different code, a different message, a non-200, or
-// no reply at all — is treated as "not a duplicate", so the check failing open
+// Company and applicant are the whole key. Not the job title: a second role at
+// a company already applied to is the same company written to twice, and one
+// application per company per person is the rule. A different applicant is a
+// different key, so the same company is still open to them.
+//
+// Only the exact answer { code: 200, msg: "already exist" } drops the job.
+// Anything else — a different code, a different message, a non-200, or no
+// reply at all — is treated as "not a duplicate", so the check failing open
 // can never silently cost you a job.
 async function checkExisting(job, signal) {
   try {
     const profile = await getProfile();
     const { res, data } = await postJson(
       CHECK_ENDPOINT,
-      { company: job.company, job_title: job.title, user: profile?.countryName || "" },
+      {
+        company: job.company,
+        job_title: job.title,
+        user: profile?.countryName || "",
+        profile: profile?.applicant || ""
+      },
       signal
     );
 
@@ -798,7 +983,7 @@ const JOB_BLOCK_RE =
 
 // Replaces the text inside the first element carrying `cls` among its classes,
 // whatever its tag. Returns the input unchanged when there is no such element,
-// so a style that leaves one out (SF-1 has no .title) simply does not show it.
+// so a style that leaves one out (FS-2 has no .title) simply does not show it.
 const fillClass = (html, cls, inner) =>
   html.replace(
     new RegExp(`(<(\\w+)[^>]*class="(?:[^"]*\\s)?${cls}(?:\\s[^"]*)?"[^>]*>)[\\s\\S]*?(<\\/\\2>)`),
@@ -933,7 +1118,7 @@ function contactLabel(s) {
 // CONTACT is [name, headline title, ...the rest of the header line]. The rest
 // goes on the template's contact line, in the order given, joined with the
 // separator the template already uses there. A style with a second
-// "contact links" line (SF-1) gets the links there instead. A contact line
+// "contact links" line (DA-1) gets the links there instead. A contact line
 // holding a <span class="key"> (FS-1) labels every entry with a copy of it —
 // "Email: …", "Location: …" — and a link then shows its address, since the
 // label already names the site.
@@ -1689,7 +1874,10 @@ async function saveJob(job, detail, signal, profile) {
     job_title: job.title,
     // Which country tab this lands on in the shared archive. Blank leaves it
     // off every tab there rather than guessing.
-    user: profile?.countryName || ""
+    user: profile?.countryName || "",
+    // Who applied. Written to the record so the duplicate check above has
+    // something to match the next run against.
+    profile: profile?.applicant || ""
   };
 
   try {
@@ -1742,10 +1930,11 @@ async function generateManual(input) {
   if (manualBusy) return { ok: false, error: "the last one is still being written" };
 
   manualBusy = true;
+  const release = holdWorker();
   try {
-    // Asked before the model is, so a posting the collector already holds
-    // costs no API call. A check that fails fails open, as on the feed: the
-    // job goes ahead and the error is reported beside the result.
+    // Asked before the model is, so a company already applied to costs no API
+    // call. A check that fails fails open, as on the feed: the job goes ahead
+    // and the error is reported beside the result.
     const job = { href: url, company, title };
     const check = await checkExisting(job, undefined);
     if (check.exists) return { ok: true, duplicate: true, resume: null, save: null };
@@ -1773,6 +1962,7 @@ async function generateManual(input) {
 
     return { ok: true, resume, save, duplicate: false, checkError: check.error };
   } finally {
+    release();
     manualBusy = false;
   }
 }
@@ -1844,12 +2034,21 @@ async function handle(msg) {
       // keeps Start off for the others; this is the same rule where the work
       // happens.
       const sourceKey = msg.options?.source || "jobright";
-      const source = SOURCES[sourceKey];
-      if (!source) return { ok: false, error: `${sourceKey} is not supported yet — only Jobright, Dice and Glassdoor` };
+      const baseSource = SOURCES[sourceKey];
+      if (!baseSource) return { ok: false, error: `${sourceKey} is not supported yet — only Jobright, Dice and Glassdoor` };
+
+      // Only overridden for Dice/Glassdoor (sourceUrl returns null for
+      // Jobright), so `source === SOURCES.jobright` downstream in
+      // openFeedTab still holds and that tab is never force-navigated.
+      const builtUrl = sourceUrl(sourceKey, msg.options?.searchTitle);
+      const source = builtUrl ? { ...baseSource, url: builtUrl } : baseSource;
 
       visitEnabled = msg.options?.visitJobs !== false;
       saveEnabled = msg.options?.saveJobs !== false;
       beginRun();
+      // From here the run outlives this worker: if Chrome takes the worker
+      // mid-job, the alarm wakes a new one and it picks the list back up.
+      await markRunActive();
 
       const tabId = await openFeedTab(source);
       const reply = await tell(tabId, { type: "START_STREAM", options: msg.options }, source.script);
@@ -1869,6 +2068,8 @@ async function handle(msg) {
     case "STOP": {
       visitEnabled = false;
       abortRun();
+      // Stop means stop: the watchdog must not quietly start it again.
+      await markRunDone();
 
       // Every board's list tab, in case more than one is open.
       const stopped = await Promise.all(
@@ -1923,6 +2124,7 @@ async function handle(msg) {
       return generateManual(msg.job);
 
     case "CLEAR": {
+      await markRunDone();
       queue.length = 0;
       queued.clear();
       checkQueue.length = 0;

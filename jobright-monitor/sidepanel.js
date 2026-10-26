@@ -36,6 +36,7 @@ function syncButtons() {
   // The board is fixed while a run is on: switching clears the list, and a
   // stream still running would fill it straight back up from the old board.
   $("jobSource").disabled = active;
+  $("searchTitle").disabled = active;
 }
 
 // ---------------------------------------------------------------------------
@@ -59,6 +60,19 @@ try {
   if (Object.hasOwn(SOURCE_NAMES, saved)) jobSource = saved;
 } catch {
   // storage unavailable: Jobright, as before
+}
+
+// Dice and Glassdoor search by a typed keyword; Jobright's recommend feed is
+// personalized and has no search term to type. Remembered the same way the
+// board choice is.
+const SEARCHABLE_SOURCES = new Set(["dice", "glassdoor"]);
+const SEARCH_TITLE_KEY = "searchTitle";
+
+let searchTitle = "";
+try {
+  searchTitle = localStorage.getItem(SEARCH_TITLE_KEY) || "";
+} catch {
+  // not remembered; starts blank (falls back to "data engineer")
 }
 
 // ---------------------------------------------------------------------------
@@ -351,6 +365,7 @@ startEl.addEventListener("click", async () => {
     type: "START",
     options: {
       source: jobSource,
+      searchTitle,
       autoScroll: $("autoScroll").checked,
       visitJobs: $("visitJobs").checked,
       saveJobs: $("saveJobs").checked
@@ -454,6 +469,7 @@ for (const button of modeButtons) {
 
 const jobSourceEl = $("jobSource");
 const sourceNoteEl = $("sourceNote");
+const searchTitleEl = $("searchTitle");
 
 function selectSource(source) {
   jobSource = source;
@@ -463,6 +479,7 @@ function selectSource(source) {
   sourceNoteEl.textContent = supported
     ? ""
     : `${SOURCE_NAMES[source]} is not connected yet — only Jobright, Dice and Glassdoor fetch jobs for now.`;
+  searchTitleEl.hidden = !SEARCHABLE_SOURCES.has(source);
   try {
     localStorage.setItem(SOURCE_KEY, source);
   } catch {
@@ -476,6 +493,16 @@ jobSourceEl.addEventListener("change", () => {
   if (jobSourceEl.value === jobSource) return;
   selectSource(jobSourceEl.value);
   clearList();
+});
+
+searchTitleEl.value = searchTitle;
+searchTitleEl.addEventListener("change", () => {
+  searchTitle = searchTitleEl.value.trim();
+  try {
+    localStorage.setItem(SEARCH_TITLE_KEY, searchTitle);
+  } catch {
+    // not remembered; the typed title still applies until the panel closes
+  }
 });
 
 selectSource(jobSource);
@@ -498,7 +525,7 @@ function renderManualResult({ resume, save, duplicate, checkError }) {
 
   // Found before the model was asked, so nothing was written or sent.
   if (duplicate) {
-    showManualStatus("Already exists — the collector has this company and job title. Nothing generated.", "warn");
+    showManualStatus("Already applied — this applicant has a record at this company. Nothing generated.", "warn");
     return;
   }
 
@@ -594,7 +621,7 @@ manualGenerateEl.addEventListener("click", async () => {
 // handled separately because they are selects — model with a free-text escape
 // hatch, resumeStyle with the built-in list plus any added with Style add; the
 // rest are plain inputs and textareas, read and written the same way.
-const PROFILE_TEXT_FIELDS = ["apiKey", "prompt", "masterResume", "countryName"];
+const PROFILE_TEXT_FIELDS = ["apiKey", "prompt", "masterResume", "countryName", "applicant"];
 const PROFILE_FIELDS = [...PROFILE_TEXT_FIELDS, "model", "resumeStyle"];
 
 const CUSTOM_MODEL = "__custom__";
@@ -670,7 +697,7 @@ function syncProfileButtons() {
 function showKeyState(apiKey) {
   profileStatusEl.className = "hint";
   profileStatusEl.textContent = apiKey
-    ? "Key set. Resumes will be generated for jobs the collector does not have."
+    ? "Key set. Resumes are generated for companies this applicant has not applied to yet."
     : "No key set — nothing will be saved, since a job is only sent once its resume is built.";
 }
 

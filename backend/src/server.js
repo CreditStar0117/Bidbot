@@ -98,6 +98,15 @@ function submittedDate(value) {
 /** Render and file one submission, updating the record either way. */
 async function fileSubmission(id, { company, jobTitle, jobUrl, documents, date }) {
   try {
+    // The folder this record already owns, or null if it has never been filed.
+    //
+    // One company can reach the archive several times in a day -- several roles
+    // at once, or the same posting generated again, which the collector no
+    // longer filters out -- and `{date}/{company}/` holds one set of documents.
+    // A record being filed for the first time therefore needs a folder nothing
+    // else owns: landing on another submission's, it would be given the PDFs
+    // already sitting there and the resume just written would be dropped.
+    // Re-filing a record that has a folder is the opposite case and reuses it.
     const stored = await storeSubmission({
       root: config.dataRoot,
       company,
@@ -105,6 +114,10 @@ async function fileSubmission(id, { company, jobTitle, jobUrl, documents, date }
       jobUrl,
       documents,
       date,
+      dir: store.get(id)?.dir_path || null,
+      // A folder standing empty is not the same as a folder going spare: the
+      // record that emptied it may still be in the log, pointing at it.
+      isTaken: (candidate) => store.dirPathTaken(candidate),
     });
     store.dropDraft(id);
     const record = store.markSaved(id, stored);
@@ -157,6 +170,11 @@ app.post('/save-data', async (req, res) => {
   // unassigned rather than guessing, and an unassigned submission always
   // waits for a human -- there is no tab whose Automatic preference could
   // apply to it.
+  // Who applied. Stored on the record so `/get-item` has something to match
+  // the next run's candidates against -- without it every company reads as new
+  // and the same employer is applied to over and over.
+  const applicant = String(body.profile || '').trim();
+
   const userName = String(body.user || '').trim();
   const user = userName ? store.findOrCreateUser(userName, { auto: config.autoByDefault }) : null;
   // A brand-new tab made in passing here still needs telling to every open
@@ -180,6 +198,7 @@ app.post('/save-data', async (req, res) => {
     mode,
     createdAt: date ? date.toISOString() : undefined,
     sent,
+    profile: applicant,
   });
 
   if (!auto) {
@@ -224,22 +243,26 @@ app.post('/save-data', async (req, res) => {
  * transport failure. `record` rides along for callers that want to know what
  * was found -- a rejected posting is still a posting that was seen before.
  *
- * `user` names the same tab `/save-data` files under, so the check is scoped
- * to it: a posting one tab already holds should not stop a different tab from
- * seeing it as new. An unrecognized or blank name checks the unassigned tab
- * rather than falling back to a global, cross-tab check.
+ * `profile` names the applicant, and with the company it is the whole key:
+ * one application per company per person. Asked before the extension opens a
+ * job link, so a company already applied to costs nothing at all -- no page
+ * load, no generation. Deliberately not matched on `job_title`, because a
+ * second role at the same employer is still that employer for a second time.
+ *
+ * A blank applicant matches the records filed with no applicant rather than
+ * everybody's. `user` is still accepted and still files the record under that
+ * tab, but it no longer narrows this answer.
  */
 app.post('/get-item', (req, res) => {
   const company = String(req.body?.company || '').trim();
   const jobTitle = String(req.body?.job_title || '').trim();
-  const userName = String(req.body?.user || '').trim();
+  const applicant = String(req.body?.profile || '').trim();
 
   if (!company || !jobTitle) {
     return res.status(400).json({ code: 400, msg: 'company and job_title are required' });
   }
 
-  const user = userName ? store.getUserByName(userName) : null;
-  const record = store.findByJob(company, jobTitle, user ? user.id : null);
+  const record = store.findByCompany(company, applicant);
   if (!record) return res.json({ code: 401, msg: 'not exist' });
 
   return res.json({
