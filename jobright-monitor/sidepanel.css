@@ -506,6 +506,9 @@ button:disabled:hover { border-color: var(--line); }
   text-overflow: ellipsis;
 }
 #queue[hidden] { display: none; }
+/* Waiting on the backend: the reason is the point, so it wraps rather than
+   being cut off. */
+#queue.warn { color: var(--err); white-space: normal; }
 
 /* ==========================================================================
    The job list
