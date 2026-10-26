@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Jiangyun Zhu - Senior Data Engineer</title>
+  <title>Triet Le - Senior Salesforce Developer</title>
   <script src="./data.js"></script>
   <style>
     /* ------------------------------------------------------------------
@@ -13,11 +13,12 @@
      column, the section's content on the right, with a hairline rule under
      each row.
 
-     The holes the builder fills are the same as DE-1's: the name and contact
-     lines, #summary, #skills, the first job block, which is copied once per
-     role, the first education item, copied once per school, and the first
-     certification item, copied once per certification. Only the
-     presentation differs, so the two styles are interchangeable.
+     The holes the builder fills are the same as DE-1's: the name, the
+     headline under it, the one contact line, #summary, #skills, the first
+     job block, which is copied once per role, the first education item,
+     copied once per school, and the first certification item, copied once
+     per certification. Only the presentation differs, so the two styles
+     are interchangeable.
 
      Keep tag names out of the comments below - the builder scans this file
      with a regex, and a tag written in a comment is a tag as far as it can
@@ -65,14 +66,17 @@
       color: var(--navy);
     }
 
-    .contact {
-      margin: 9px 0 0;
-      font-size: 12px;
-      color: var(--muted);
+    .title {
+      margin: 7px 0 0;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--navy);
     }
 
-    .contact.links {
-      margin-top: 2px;
+    .contact {
+      margin: 5px 0 0;
+      font-size: 12px;
+      color: var(--muted);
     }
 
     .contact .sep {
@@ -313,12 +317,12 @@
 
 <body>
 
-  <h1 class="name">Jiangyun Zhu</h1>
+  <h1 class="name">Triet Le</h1>
+  <p class="title">Salesforce Architect | Senior Salesforce Developer</p>
   <p class="contact">
-    jiang.y.z.1015@gmail.com<span class="sep">|</span>(310) 896-5119<span
-      class="sep">|</span>San Carlos, CA 94070
+    Chandler, AZ<span class="sep">|</span>(602) 825-3683<span class="sep">|</span>trietle1997@outlook.com<span
+      class="sep">|</span><a href="https://www.linkedin.com/in/trietle97/">LinkedIn</a>
   </p>
-  <p class="contact links"><a href="https://linkedin.com/in/jiangyun-zhu-650b8b167">LinkedIn</a></p>
   <hr class="header-rule">
 
   <div class="row">
@@ -468,32 +472,40 @@
     }
 
     // Header: CONTACT is [name, title, location, phone, email, link, ...].
-    // This style shows no title; links go on the second contact line.
-    const [name, , ...contact] = resume.CONTACT || [];
-    if (name) document.querySelector("h1.name").textContent = name;
+    // The title is the headline line under the name, and every remaining item
+    // shares one contact line, links included, so LinkedIn sits beside the
+    // email rather than on a line of its own.
+    const [name, title, ...contact] = resume.CONTACT || [];
+    const titleLine = document.querySelector(".title");
+    if (name) {
+      document.querySelector("h1.name").textContent = name;
+      document.title = title ? `${name} - ${title}` : name;
+    }
+    if (title) {
+      titleLine.textContent = title;
+    } else {
+      titleLine.remove();
+    }
     if (contact.length) {
       const isLink = (s) => /^https?:\/\//i.test(s);
-      const fill = (line, items) => {
-        line.replaceChildren();
-        items.forEach((item, i) => {
-          if (i) {
-            const sep = document.createElement("span");
-            sep.className = "sep";
-            sep.textContent = "|";
-            line.append(sep);
-          }
-          if (isLink(item)) {
-            const a = document.createElement("a");
-            a.href = item;
-            a.textContent = /linkedin\.com/i.test(item) ? "LinkedIn" : item;
-            line.append(a);
-          } else {
-            line.append(item);
-          }
-        });
-      };
-      fill(document.querySelector(".contact:not(.links)"), contact.filter((s) => !isLink(s)));
-      fill(document.querySelector(".contact.links"), contact.filter(isLink));
+      const line = document.querySelector(".contact");
+      line.replaceChildren();
+      contact.forEach((item, i) => {
+        if (i) {
+          const sep = document.createElement("span");
+          sep.className = "sep";
+          sep.textContent = "|";
+          line.append(sep);
+        }
+        if (isLink(item)) {
+          const a = document.createElement("a");
+          a.href = item;
+          a.textContent = /linkedin\.com/i.test(item) ? "LinkedIn" : item;
+          line.append(a);
+        } else {
+          line.append(item);
+        }
+      });
     }
 
     // Experience: the first .job is the pattern, copied once per EXPERIENCE

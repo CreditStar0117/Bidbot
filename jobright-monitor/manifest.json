@@ -6,7 +6,7 @@
 
   "minimum_chrome_version": "116",
 
-  "permissions": ["storage", "tabs", "scripting", "sidePanel"],
+  "permissions": ["storage", "alarms", "tabs", "scripting", "sidePanel"],
   "host_permissions": [
     "https://jobright.ai/*",
     "https://*.jobright.ai/*",

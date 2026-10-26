@@ -66,6 +66,11 @@
         </select>
         <p id="sourceNote" class="hint warn source-note" hidden></p>
 
+        <!-- Dice and Glassdoor search by a typed keyword; Jobright's feed is
+             personalized and takes no search term, so this stays hidden for it. -->
+        <input id="searchTitle" type="text" class="search-title" aria-label="Job title to search"
+               placeholder="e.g. Java Engineer" autocomplete="off" spellcheck="false" hidden>
+
         <div class="controls">
           <button id="start" class="primary">Start</button>
           <button id="stop" class="danger" disabled>Stop</button>
@@ -224,6 +229,13 @@
                placeholder="e.g. United States">
         <p class="hint">Tags every application this profile saves with a country, so the shared
           dashboard files it under that tab. Leave it blank and it won't show up under any tab there.</p>
+
+        <label class="field-label" for="applicant">Applicant</label>
+        <input id="applicant" type="text" autocomplete="off" spellcheck="false"
+               placeholder="e.g. Gaopeng Wang">
+        <p class="hint">Who this profile applies as, and what duplicates are judged against: a
+          company this applicant has already applied to is skipped before its link is ever opened.
+          Change the name and the whole board is open again.</p>
       </section>
 
       <div class="controls form-actions">
