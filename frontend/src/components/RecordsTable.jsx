@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { API } from '../hooks/useArchive.js';
 import { hintFor } from '../lib/sheetSyncHints.js';
 
@@ -20,6 +20,30 @@ const when = (iso) => (iso ? new Date(iso).toLocaleDateString() : '');
 const hasFiles = (record) => KINDS.some(([kind]) => record[`${kind}_path`]);
 
 const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
+
+/**
+ * What a search looks through: the company, the job title, the record number
+ * and status, and the received date both as the table shows it and as the
+ * folder names it (2026-10-27). Not the stored path -- every one of those
+ * starts with the same data root, so a search for "data" would match it all.
+ */
+const searchText = (record) =>
+  [
+    record.company,
+    record.job_title,
+    `#${record.id}`,
+    record.status,
+    when(record.created_at),
+    record.created_at ? record.created_at.slice(0, 10) : '',
+  ]
+    .join(' ')
+    .toLowerCase();
+
+/** Every word typed has to appear somewhere, in any order: "java remote" finds "Remote Java Engineer". */
+const matches = (record, terms) => {
+  const text = searchText(record);
+  return terms.every((term) => text.includes(term));
+};
 
 // Fewest rows a page is ever cut down to, however short the window is: below
 // this the pager costs more room than the rows it pages through.
@@ -148,6 +172,24 @@ export default function RecordsTable({
   useEffect(() => {
     writeView({ following, anchorId });
   }, [following, anchorId]);
+
+  // A search narrows the table to the rows that match and pages over those
+  // alone. It keeps its own page and never touches the remembered place above,
+  // so clearing it puts the reader back exactly where they were. `null` is the
+  // last page -- the newest matches, the same end the whole archive opens on.
+  const [query, setQuery] = useState('');
+  const [searchPage, setSearchPage] = useState(null);
+  const terms = useMemo(() => query.trim().toLowerCase().split(/\s+/).filter(Boolean), [query]);
+  const searching = terms.length > 0;
+  const shown = useMemo(
+    () => (searching ? records.filter((record) => matches(record, terms)) : records),
+    [records, terms, searching],
+  );
+
+  const search = (next) => {
+    setQuery(next);
+    setSearchPage(null);
+  };
   // A page is as many rows as the window has room for, so the panel ends near
   // the bottom of the screen with no dead space inside it. Measured rather
   // than assumed: the height above the table depends on whether the offline
@@ -178,7 +220,7 @@ export default function RecordsTable({
     });
   }, [records]);
 
-  const pages = Math.max(1, Math.ceil(records.length / pageSize));
+  const pages = Math.max(1, Math.ceil(shown.length / pageSize));
 
   // The page is not stored; it is whichever page holds the remembered record at
   // today's rows-per-page. Records are in id order, so a record that has since
@@ -187,15 +229,21 @@ export default function RecordsTable({
   // also covers deleting the last row of the last page. Until the archive has
   // arrived there is nothing to find, and the last page is as good as any.
   let page = pages;
-  if (!following && anchorId !== null) {
+  if (searching) {
+    if (searchPage !== null) page = Math.min(searchPage, pages);
+  } else if (!following && anchorId !== null) {
     const index = records.findIndex((record) => record.id >= anchorId);
     if (index >= 0) page = Math.floor(index / pageSize) + 1;
   }
 
   const from = (page - 1) * pageSize;
-  const visible = records.slice(from, from + pageSize);
+  const visible = shown.slice(from, from + pageSize);
 
   const show = (next) => {
+    if (searching) {
+      setSearchPage(next === pages ? null : next);
+      return;
+    }
     setFollowing(next === pages);
     setAnchorId(records[(next - 1) * pageSize]?.id ?? null);
   };
@@ -316,6 +364,22 @@ export default function RecordsTable({
       <div className="panel-head">
         <h2 className="panel-title">Applications</h2>
         <div className="head-actions">
+          {records.length > 0 ? (
+            <input
+              type="search"
+              className="search"
+              placeholder="Search company, job title, #id, date…"
+              value={query}
+              onChange={(event) => search(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === 'Escape' && query) {
+                  event.preventDefault();
+                  search('');
+                }
+              }}
+              aria-label="Search applications"
+            />
+          ) : null}
           {selected.size > 0 ? (
             <>
               <span className="tile-detail">{selected.size} selected</span>
@@ -330,7 +394,9 @@ export default function RecordsTable({
               </button>
             </>
           ) : (
-            <span className="tile-detail">{records.length} total</span>
+            <span className="tile-detail">
+              {searching ? `${shown.length} of ${records.length}` : `${records.length} total`}
+            </span>
           )}
         </div>
       </div>
@@ -362,6 +428,7 @@ export default function RecordsTable({
                   <input
                     type="checkbox"
                     checked={wholePagePicked}
+                    disabled={visible.length === 0}
                     ref={(node) => {
                       if (node) node.indeterminate = pickedOnPage > 0 && !wholePagePicked;
                     }}
@@ -385,6 +452,18 @@ export default function RecordsTable({
               </tr>
             </thead>
             <tbody>
+              {/* Inside the table rather than in place of it, so the panel
+                  keeps its height while a search is typed and comes up empty. */}
+              {shown.length === 0 ? (
+                <tr className="no-match">
+                  <td colSpan={COLUMN_COUNT}>
+                    No applications match <strong>{query.trim()}</strong>.{' '}
+                    <button className="link-btn" onClick={() => search('')}>
+                      Clear search
+                    </button>
+                  </td>
+                </tr>
+              ) : null}
               {visible.map((record) => {
                 const isSending = sheetSending.has(record.id);
                 // The archive's own answer: every record arrives unsent and
@@ -504,11 +583,11 @@ export default function RecordsTable({
         </div>
       )}
 
-      {records.length > pageSize ? (
+      {shown.length > pageSize ? (
         <div className="pager">
           <span className="tile-detail">
-            {from + 1}–{Math.min(from + pageSize, records.length)} of {records.length}
-            {following ? ' · newest' : null}
+            {from + 1}–{Math.min(from + pageSize, shown.length)} of {shown.length}
+            {searching ? ' matches' : following ? ' · newest' : null}
           </span>
           {/* Every number is as wide as the largest, so 9 and 109 take the same
               room and the row keeps its width as the pages turn. */}

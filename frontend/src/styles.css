@@ -314,6 +314,36 @@ td.path { color: var(--muted); font-family: var(--mono); font-size: 11px; word-b
 .tag.bad { background: color-mix(in srgb, var(--bad) 20%, transparent); color: var(--bad); }
 
 .head-actions { display: flex; align-items: center; gap: 10px; }
+.head-actions .tile-detail { white-space: nowrap; }
+
+/* Filters the Applications table as it is typed. Sized like the header's
+   buttons, so the header row barely grows to hold it. */
+.search {
+  width: min(280px, 40vw);
+  padding: 4px 9px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-2);
+  color: var(--text);
+  font: inherit;
+  font-size: 12.5px;
+  line-height: 1.2;
+}
+.search::placeholder { color: var(--muted); }
+.search:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+tbody tr.no-match td { padding: 26px 10px; text-align: center; color: var(--muted); font-size: 13px; }
+tbody tr.no-match:hover td { background: none; }
+tbody tr.no-match strong { color: var(--text-2); }
+.link-btn {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  cursor: pointer;
+}
+.link-btn:hover { text-decoration: underline; }
 
 /* Delete is destructive, so it is quiet until pointed at and never the
    brightest thing on the row. */
