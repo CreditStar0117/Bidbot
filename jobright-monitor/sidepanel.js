@@ -310,11 +310,16 @@ chrome.runtime.onMessage.addListener((msg) => {
     const s = msg.status;
     queueRunning = s.draining;
     syncButtons();
-    queueEl.hidden = !s.draining && !s.pending;
+    queueEl.hidden = !s.draining && !s.pending && !s.collectorDown;
+    queueEl.classList.toggle("warn", Boolean(s.collectorDown));
     const tally = `${s.visited} read · ${s.generated} written · ${s.saved} saved · ${s.skipped} filtered out`;
-    queueEl.textContent = s.draining
-      ? `Reading · ${s.pending} queued · ${tally}${s.current ? ` · ${s.current}` : ""}`
-      : tally;
+    // New cards wait for the collector rather than going through unchecked,
+    // so this says why the list has stopped growing.
+    queueEl.textContent = s.collectorDown
+      ? `Duplicate check waiting for the backend (${s.collectorDown}) — start it and the run carries on · ${tally}`
+      : s.draining
+        ? `Reading · ${s.pending} queued · ${tally}${s.current ? ` · ${s.current}` : ""}`
+        : tally;
     return false;
   }
 

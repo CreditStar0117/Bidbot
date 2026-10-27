@@ -80,6 +80,24 @@ const MAX_STORED = 50;
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+// A sleep that Stop can cut short: rejects with the signal's reason the moment
+// it aborts, so a retry wait never holds a stopped run open.
+function wait(ms, signal) {
+  if (!signal) return sleep(ms);
+  return new Promise((resolve, reject) => {
+    if (signal.aborted) return reject(signal.reason);
+    const onAbort = () => {
+      clearTimeout(timer);
+      reject(signal.reason);
+    };
+    const timer = setTimeout(() => {
+      signal.removeEventListener("abort", onAbort);
+      resolve();
+    }, ms);
+    signal.addEventListener("abort", onAbort, { once: true });
+  });
+}
+
 // ---------------------------------------------------------------------------
 // The toolbar button opens the panel directly — there is no popup.
 // ---------------------------------------------------------------------------
@@ -665,12 +683,21 @@ resumeRun();
 // a visit is a page load plus a generation. Tying the list to the slow queue
 // would fill it one row every half-minute instead of as fast as the feed finds
 // cards.
+//
+// A collector that cannot be reached at all does not answer the question, so
+// the filter waits for it rather than guessing. Guessing "new" is what let a
+// run started before the backend was up apply to the same company twice: every
+// check failed, every card went through, and by the time the slow queue got to
+// saving them the backend was up and took them all.
 // ---------------------------------------------------------------------------
 
 const checkQueue = [];
 const checked = new Set(); // candidates ever filtered, so a re-scan cannot re-ask
 let checking = false;
 let acceptedCount = 0;
+// Why the collector cannot be reached, while the filter is waiting on it.
+let collectorDown = null;
+const CHECK_RETRY_MS = 5000;
 
 function enqueueCheck(job) {
   if (!job?.key || checked.has(job.key)) return;
@@ -709,6 +736,30 @@ async function drainChecks() {
         break;
       }
 
+      // No answer at all: the backend is down or still starting. The job goes
+      // back to the front and is asked about again once it answers.
+      if (check.unreachable) {
+        checkQueue.unshift(job);
+        if (!collectorDown) console.warn(`[jobright] duplicate check paused: ${check.error}`);
+        collectorDown = check.error;
+        queueStatus();
+        // Without a run there is no Stop to end the wait, so the job stays at
+        // the front for the next Start instead.
+        if (!signal) break;
+        try {
+          await wait(CHECK_RETRY_MS, signal);
+        } catch {
+          break; // stopped while waiting
+        }
+        continue;
+      }
+
+      if (collectorDown) {
+        collectorDown = null;
+        console.log("[jobright] collector is answering again — duplicate checks resumed");
+        queueStatus();
+      }
+
       // This applicant has already applied to this company. The card is
       // dropped here, which is the whole point of asking before the visit
       // queue rather than inside it: nothing is fetched and nothing is spent.
@@ -730,6 +781,8 @@ async function drainChecks() {
   } finally {
     release();
     checking = false;
+    // Only meaningful while the filter is running and waiting on it.
+    collectorDown = null;
     queueStatus();
   }
 }
@@ -765,6 +818,7 @@ function queueStatus(extra = {}) {
       skipped: skippedCount,
       accepted: acceptedCount,
       checking: checkQueue.length,
+      collectorDown,
       generated: generatedCount,
       ...extra
     }
@@ -884,9 +938,10 @@ function describeFetchError(err, url) {
 // different key, so the same company is still open to them.
 //
 // Only the exact answer { code: 200, msg: "already exist" } drops the job.
-// Anything else — a different code, a different message, a non-200, or no
-// reply at all — is treated as "not a duplicate", so the check failing open
-// can never silently cost you a job.
+// Any other answer — a different code, a different message, a non-200 — is
+// treated as "not a duplicate", so the check failing open can never silently
+// cost you a job. No reply at all is different: it comes back `unreachable`,
+// and the caller waits for the collector rather than guessing.
 async function checkExisting(job, signal) {
   try {
     const profile = await getProfile();
@@ -901,11 +956,16 @@ async function checkExisting(job, signal) {
       signal
     );
 
-    const exists = res.ok && data?.code === 200 && data?.msg === "already exist";
+    // Answered, but not with a verdict: goes ahead, with the reason shown.
+    if (!res.ok) {
+      return { ok: false, exists: false, error: `HTTP ${res.status} ${res.statusText} from ${CHECK_ENDPOINT}` };
+    }
+
+    const exists = data?.code === 200 && data?.msg === "already exist";
     return { ok: true, exists };
   } catch (err) {
     if (signal?.aborted) return { ok: false, stopped: true, exists: false };
-    return { ok: false, exists: false, error: describeFetchError(err, CHECK_ENDPOINT) };
+    return { ok: false, exists: false, unreachable: true, error: describeFetchError(err, CHECK_ENDPOINT) };
   }
 }
 
@@ -1653,6 +1713,12 @@ const OPENAI_ENDPOINT = "https://api.openai.com/v1/chat/completions";
 // budget rather than the 10s the collector calls use.
 const GENERATE_TIMEOUT_MS = 120000;
 
+// A request that got no response at all — a dropped connection, a DNS blip, a
+// VPN reconnecting — is tried again before the job is given up on. An HTTP
+// error is a response and is not retried: a bad key or model stays bad.
+const OPENAI_NETWORK_RETRIES = 2;
+const OPENAI_RETRY_DELAY_MS = 3000;
+
 async function generateResume(profile, detail, signal) {
   if (!profile.apiKey) {
     return { ok: false, skipped: true, error: "no API key set — open ChatGPT setting on the Generate tab" };
@@ -1708,20 +1774,32 @@ async function generateResume(profile, detail, signal) {
   console.log("[jobright]   user message:\n" + messages[1].content);
 
   try {
-    const res = await fetch(OPENAI_ENDPOINT, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${profile.apiKey}`
-      },
-      body: JSON.stringify({
-        model: profile.model,
-        // No response_format here: JSON mode would force a bare JSON object,
-        // and the answer wanted is JavaScript source carrying two declarations.
-        messages
-      }),
-      signal: abort
-    });
+    let res;
+    for (let attempt = 1; ; attempt++) {
+      try {
+        res = await fetch(OPENAI_ENDPOINT, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${profile.apiKey}`
+          },
+          body: JSON.stringify({
+            model: profile.model,
+            // No response_format here: JSON mode would force a bare JSON object,
+            // and the answer wanted is JavaScript source carrying two declarations.
+            messages
+          }),
+          signal: abort
+        });
+        break;
+      } catch (err) {
+        if (abort.aborted || !isNetworkError(err) || attempt > OPENAI_NETWORK_RETRIES) throw err;
+        console.warn(`[jobright] could not reach OpenAI (${err.message}) — retry ${attempt} of ${OPENAI_NETWORK_RETRIES}`);
+        // Stop or the overall timeout ends the wait, and the catch below
+        // reports whichever it was.
+        await wait(OPENAI_RETRY_DELAY_MS * attempt, abort);
+      }
+    }
 
     let data = null;
     try {
@@ -1933,10 +2011,12 @@ async function generateManual(input) {
   const release = holdWorker();
   try {
     // Asked before the model is, so a company already applied to costs no API
-    // call. A check that fails fails open, as on the feed: the job goes ahead
-    // and the error is reported beside the result.
+    // call. A check that answers oddly fails open, as on the feed: the job
+    // goes ahead and the error is reported beside the result. One that gets no
+    // answer stops here — the save would have nowhere to go either.
     const job = { href: url, company, title };
     const check = await checkExisting(job, undefined);
+    if (check.unreachable) return { ok: false, error: `${check.error} Nothing was generated.` };
     if (check.exists) return { ok: true, duplicate: true, resume: null, save: null };
 
     broadcast({ type: "MANUAL_STATUS", stage: "generating" });
