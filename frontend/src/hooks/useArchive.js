@@ -170,6 +170,13 @@ export function useArchive() {
   // this is what makes the result outlive the tab that did it.
   const markSent = useCallback((id, sent = true) => post(`/api/records/${id}/sent`, { sent }), []);
 
+  // 'applied' or 'cancelled' -- the human's own word on what became of the
+  // job, one or the other. The new state arrives on the stream like any other.
+  const setApplyStatus = useCallback(
+    (id, status) => post(`/api/records/${id}/apply-status`, { status }),
+    [],
+  );
+
   // `withFiles` decides whether the stored PDFs go with the record. The row
   // disappears when the server confirms it on the stream, not before.
   const remove = useCallback(
@@ -184,6 +191,7 @@ export function useArchive() {
     approve,
     reject,
     markSent,
+    setApplyStatus,
     remove,
     createUser,
     updateUser,

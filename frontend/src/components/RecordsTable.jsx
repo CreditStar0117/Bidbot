@@ -4,7 +4,7 @@ import { hintFor } from '../lib/sheetSyncHints.js';
 
 // Kept in sync with the <th> list in the table below -- an error banner
 // spans every column, so it needs to know how many there are.
-const COLUMN_COUNT = 9;
+const COLUMN_COUNT = 10;
 
 // The .docx is written beside the resume PDF and deleted with it, but it is not
 // offered here: the PDF is the copy to read, and a second link to the same
@@ -33,6 +33,7 @@ const searchText = (record) =>
     record.job_title,
     `#${record.id}`,
     record.status,
+    record.apply_status === 'none' ? '' : record.apply_status,
     when(record.created_at),
     record.created_at ? record.created_at.slice(0, 10) : '',
   ]
@@ -144,6 +145,7 @@ export default function RecordsTable({
   records,
   connected,
   onDelete,
+  onSetApplyStatus,
   sheetSending,
   sheetErrors,
   sheetWebAppUrl,
@@ -154,6 +156,9 @@ export default function RecordsTable({
   const [withFiles, setWithFiles] = useState(false);
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState(null);
+  // Records whose Apply or Cancel click is on its way to the server. The tick itself
+  // comes back on the stream; this only stops a second click meanwhile.
+  const [applying, setApplying] = useState(() => new Set());
   // Which rows are picked, by id. Kept as pages turn: choosing rows here and
   // more there, then deleting the lot, is the point of having a selection.
   const [selected, setSelected] = useState(() => new Set());
@@ -271,6 +276,21 @@ export default function RecordsTable({
       else next.add(id);
       return next;
     });
+  };
+
+  /* --- apply status ------------------------------------------------------- */
+
+  // 'applied' or 'cancelled'. Either one replaces the other on the server, so
+  // a record can never be both.
+  const changeApplyStatus = async (record, status) => {
+    setApplying((current) => new Set(current).add(record.id));
+    const result = await onSetApplyStatus(record.id, status);
+    setApplying((current) => {
+      const next = new Set(current);
+      next.delete(record.id);
+      return next;
+    });
+    if (result?.error) setNote({ tone: 'bad', text: `Couldn't update #${record.id} — ${result.error}` });
   };
 
   /* --- deleting ----------------------------------------------------------- */
@@ -442,6 +462,7 @@ export default function RecordsTable({
                   />
                 </th>
                 <th scope="col" className="col-sheet">Sheet</th>
+                <th scope="col" className="col-apply">Applied</th>
                 <th scope="col">#</th>
                 <th scope="col">Received</th>
                 <th scope="col">Company</th>
@@ -466,6 +487,12 @@ export default function RecordsTable({
               ) : null}
               {visible.map((record) => {
                 const isSending = sheetSending.has(record.id);
+                // Applied and cancelled are either/or: each button is locked
+                // while its own state is the one on the record, and clicking
+                // the other switches to it.
+                const isApplied = record.apply_status === 'applied';
+                const isCancelled = record.apply_status === 'cancelled';
+                const statusChanging = applying.has(record.id);
                 // The archive's own answer: every record arrives unsent and
                 // stays that way until a send to the sheet comes back OK.
                 const isSent = record.sent_status === 'sent';
@@ -504,6 +531,38 @@ export default function RecordsTable({
                           onClick={() => onSendToSheet(record)}
                         >
                           {isSending ? '…' : isSent ? '✓' : '⇪'}
+                        </button>
+                      </td>
+                      <td className="col-apply">
+                        <button
+                          className={isApplied ? 'apply-btn on' : 'apply-btn'}
+                          disabled={isApplied || statusChanging}
+                          aria-pressed={isApplied}
+                          title={isApplied ? `Applied ${when(record.apply_status_at)}` : `Mark #${record.id} as applied`}
+                          aria-label={
+                            isApplied
+                              ? `Record ${record.id}, ${record.company}, applied`
+                              : `Mark record ${record.id}, ${record.company}, as applied`
+                          }
+                          onClick={() => changeApplyStatus(record, 'applied')}
+                        >
+                          {isApplied ? '✓ Applied' : 'Apply'}
+                        </button>
+                        <button
+                          className={isCancelled ? 'apply-btn cancel on' : 'apply-btn cancel'}
+                          disabled={isCancelled || statusChanging}
+                          aria-pressed={isCancelled}
+                          title={
+                            isCancelled ? `Cancelled ${when(record.apply_status_at)}` : `Mark #${record.id} as cancelled`
+                          }
+                          aria-label={
+                            isCancelled
+                              ? `Record ${record.id}, ${record.company}, cancelled`
+                              : `Mark record ${record.id}, ${record.company}, as cancelled`
+                          }
+                          onClick={() => changeApplyStatus(record, 'cancelled')}
+                        >
+                          {isCancelled ? '✕ Cancelled' : 'Cancel'}
                         </button>
                       </td>
                       <td className="num">{record.id}</td>
