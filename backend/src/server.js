@@ -3,7 +3,7 @@ import os from 'node:os';
 import cors from 'cors';
 import express from 'express';
 import { config, corsOrigins } from './config.js';
-import { Store } from './db.js';
+import { APPLY_STATUSES, Store } from './db.js';
 import { excerpt } from './html.js';
 import { resumeHtml } from './resumeTemplate.js';
 import { FILED_KINDS, removeFiles, storeSubmission } from './storage.js';
@@ -340,6 +340,26 @@ app.post('/api/records/:id/sent', (req, res) => {
   const record = store.markSent(id, sent);
   pushRecord(record);
   console.log(`[${sent ? 'sent' : 'unsent'}] #${id} ${record.company}`);
+  res.json({ ok: true, record });
+});
+
+/* --- apply status ------------------------------------------------------------
+   Whether the human applied for the job or cancelled it -- one or the other,
+   set from the dashboard's Apply and Cancel buttons and kept on the record, so
+   every open dashboard sees the same. `none` is accepted too, for putting a
+   row back to untouched by hand; the dashboard never sends it. */
+
+app.post('/api/records/:id/apply-status', (req, res) => {
+  const id = Number(req.params.id);
+  if (!store.get(id)) return res.status(404).json({ ok: false, error: 'No such record' });
+
+  const status = String(req.body?.status || '');
+  if (!APPLY_STATUSES.includes(status)) {
+    return res.status(400).json({ ok: false, error: `status must be one of ${APPLY_STATUSES.join(', ')}` });
+  }
+  const record = store.setApplyStatus(id, status);
+  pushRecord(record);
+  console.log(`[${status}] #${id} ${record.company}`);
   res.json({ ok: true, record });
 });
 
