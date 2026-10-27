@@ -708,6 +708,44 @@ tr.row-picked td { background: color-mix(in srgb, var(--accent) 10%, transparent
 .icon-btn.sheet.sent:hover { background: color-mix(in srgb, var(--good) 16%, transparent); color: var(--good); }
 .icon-btn.sheet:disabled { opacity: 0.4; cursor: default; }
 
+/* Applied: a button that stays ticked. Fixed width, so "Apply" and
+   "✓ Applied" take the same room and the column never shifts on a click. */
+.col-apply { width: 1%; white-space: nowrap; text-align: center; }
+.apply-btn {
+  min-width: 78px;
+  padding: 2px 8px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.4;
+  cursor: pointer;
+}
+.apply-btn:hover { background: color-mix(in srgb, var(--accent) 16%, transparent); color: var(--accent); }
+.apply-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.apply-btn.on {
+  border-color: color-mix(in srgb, var(--good) 45%, var(--line));
+  background: color-mix(in srgb, var(--good) 14%, transparent);
+  color: var(--good);
+}
+.apply-btn:disabled { opacity: 0.5; cursor: default; }
+/* Applied is locked, but it is a result, not a greyed-out control: full colour,
+   and no hover change to suggest it can still be clicked. */
+.apply-btn.on:disabled { opacity: 1; }
+.apply-btn.on:hover { background: color-mix(in srgb, var(--good) 14%, transparent); color: var(--good); }
+/* Cancel is Apply's either/or partner: the same locked-when-on behaviour,
+   in the "bad" colour rather than the "good" one. Wide enough for
+   "✕ Cancelled", so switching never moves the Apply button beside it. */
+.apply-btn.cancel { min-width: 92px; margin-left: 4px; }
+.apply-btn.cancel:not(:disabled):hover { background: color-mix(in srgb, var(--bad) 16%, transparent); color: var(--bad); }
+.apply-btn.cancel.on {
+  border-color: color-mix(in srgb, var(--bad) 45%, var(--line));
+  background: color-mix(in srgb, var(--bad) 14%, transparent);
+  color: var(--bad);
+}
+
 /* The row explaining why a "Send to sheet" click failed, directly under the
    row it failed for -- reason first, then what to actually do about it. */
 .sheet-error-row td { padding: 0; border-bottom: 1px solid var(--grid); }

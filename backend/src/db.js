@@ -30,6 +30,9 @@ const SHEET_SETTINGS_FIELDS = {
   secret: 'sheet_secret',
 };
 
+/** What `records.apply_status` may hold -- see `setApplyStatus`. */
+export const APPLY_STATUSES = ['none', 'applied', 'cancelled'];
+
 /**
  * The server's own database: SQLite through Node's built-in `node:sqlite`, so
  * the archive needs no service and no native build step alongside it.
@@ -68,7 +71,9 @@ export class Store {
         status        TEXT NOT NULL,          -- pending | saved | rejected | failed
         sent_status   TEXT NOT NULL DEFAULT 'unsent',  -- unsent | sent (to the sheet)
         sent_at       TEXT,
-        mode          TEXT NOT NULL,          -- the mode the submission arrived in
+        apply_status    TEXT NOT NULL DEFAULT 'none',  -- none | applied | cancelled
+        apply_status_at TEXT,
+        mode        TEXT NOT NULL,          -- the mode the submission arrived in
         dir_path      TEXT,
         job_des_path  TEXT,
         cover_path    TEXT,
@@ -120,6 +125,21 @@ export class Store {
     this.addColumn('sent_status', "TEXT NOT NULL DEFAULT 'unsent'");
     this.addColumn('sent_at', 'TEXT');
     this.addColumn('resume_docx_path', 'TEXT');
+    this.addColumn('apply_status', "TEXT NOT NULL DEFAULT 'none'");
+    this.addColumn('apply_status_at', 'TEXT');
+
+    // A short-lived version kept "applied" as its own 0/1 `applied` column,
+    // which could not also say "cancelled". Carry its ticks over to
+    // `apply_status`; the old columns stay behind unused, like the per-tab
+    // sheet columns on `users`. Safe to repeat on every startup: nothing
+    // writes `applied` any more, and a row only moves while still 'none'.
+    const columns = this.db.prepare('PRAGMA table_info(records)').all();
+    if (columns.some((column) => column.name === 'applied')) {
+      this.db.exec(
+        `UPDATE records SET apply_status = 'applied', apply_status_at = applied_at
+          WHERE applied = 1 AND apply_status = 'none'`,
+      );
+    }
 
     this.addColumn('user_id', 'INTEGER');
 
@@ -343,6 +363,23 @@ export class Store {
     this.db
       .prepare('UPDATE records SET sent_status = ?, sent_at = ? WHERE id = ?')
       .run(sent ? 'sent' : 'unsent', sent ? new Date().toISOString() : null, id);
+    return this.get(id);
+  }
+
+  /**
+   * Whether the application itself went in on the job's site -- a third
+   * question, beside `status` (the documents) and `sent_status` (the sheet).
+   * Set by hand from the dashboard; nothing here can tell on its own.
+   *
+   * One column, not an "applied" flag and a "cancelled" flag: the two are
+   * either/or, and a single value cannot hold both at once. `none` is where
+   * every record starts.
+   */
+  setApplyStatus(id, status) {
+    if (!APPLY_STATUSES.includes(status)) throw new Error(`unknown apply status "${status}"`);
+    this.db
+      .prepare('UPDATE records SET apply_status = ?, apply_status_at = ? WHERE id = ?')
+      .run(status, status === 'none' ? null : new Date().toISOString(), id);
     return this.get(id);
   }
 

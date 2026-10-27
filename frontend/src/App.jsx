@@ -20,6 +20,7 @@ export default function App() {
     approve,
     reject,
     markSent,
+    setApplyStatus,
     remove,
     createUser,
     updateUser,
@@ -277,6 +278,7 @@ export default function App() {
         records={visibleRecords}
         connected={connected}
         onDelete={remove}
+        onSetApplyStatus={setApplyStatus}
         sheetSending={sheetSync.sending}
         sheetErrors={sheetSync.errors}
         sheetWebAppUrl={sheetSync.webAppUrl}
