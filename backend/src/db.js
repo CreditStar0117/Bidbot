@@ -122,6 +122,12 @@ export class Store {
     this.addColumn('resume_docx_path', 'TEXT');
 
     this.addColumn('user_id', 'INTEGER');
+
+    // Who applied. Older databases already carry this column from a version
+    // that wrote it, which is why it was never declared here -- but a fresh
+    // install has no such history, and the duplicate check cannot match on a
+    // column that was only ever added by accident.
+    this.addColumn('profile', 'TEXT');
     this.db.exec('CREATE INDEX IF NOT EXISTS records_user ON records (user_id)');
 
     // Every record before this column existed belonged to the one person who
@@ -236,14 +242,35 @@ export class Store {
    * `sent_at` is the date on the row, being as close to when it reached the
    * sheet as anything here knows.
    */
-  insert({ company, jobTitle, jobUrl, status, mode, createdAt, sent = false, userId = null }) {
+  insert({
+    company,
+    jobTitle,
+    jobUrl,
+    status,
+    mode,
+    createdAt,
+    sent = false,
+    userId = null,
+    profile = null,
+  }) {
     const at = createdAt || new Date().toISOString();
     const result = this.db
       .prepare(
-        `INSERT INTO records (company, job_title, job_url, status, sent_status, sent_at, mode, created_at, user_id)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO records (company, job_title, job_url, status, sent_status, sent_at, mode, created_at, user_id, profile)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       )
-      .run(company, jobTitle, jobUrl || null, status, sent ? 'sent' : 'unsent', sent ? at : null, mode, at, userId);
+      .run(
+        company,
+        jobTitle,
+        jobUrl || null,
+        status,
+        sent ? 'sent' : 'unsent',
+        sent ? at : null,
+        mode,
+        at,
+        userId,
+        profile || null,
+      );
     return Number(result.lastInsertRowid);
   }
 
@@ -357,23 +384,74 @@ export class Store {
   }
 
   /**
-   * The newest record for a company and job title, or null.
+   * The newest record for a company and job title, scoped to one tab, or
+   * null.
    *
    * Matched case-insensitively on trimmed values: the same posting scraped
    * twice rarely comes back byte-identical, and a near-miss here would report
-   * a job as new when it is already in the archive.
+   * a job as new when it is already in the archive. Scoped by `userId` so
+   * that one tab's archive never blocks another tab from seeing the same
+   * posting as new -- `null` means the unassigned tab, matched against rows
+   * that are themselves unassigned (`user_id IS NULL`), not against every tab.
    */
-  findByJob(company, jobTitle) {
+  findByJob(company, jobTitle, userId = null) {
+    const userClause = userId === null ? 'user_id IS NULL' : 'user_id = ?';
+    const params = [String(company), String(jobTitle)];
+    if (userId !== null) params.push(userId);
     return (
       this.db
         .prepare(
           `SELECT * FROM records
              WHERE lower(trim(company)) = lower(trim(?))
                AND lower(trim(job_title)) = lower(trim(?))
+               AND ${userClause}
              ORDER BY id DESC LIMIT 1`,
         )
-        .get(String(company), String(jobTitle)) || null
+        .get(...params) || null
     );
+  }
+
+  /**
+   * Has this applicant already applied to this company?
+   *
+   * Company and applicant are the whole key -- deliberately not the job title.
+   * A second role at a company already applied to is still that company for a
+   * second time, and the rule is one application per company per person. The
+   * answer is what stops a job link ever being fetched.
+   *
+   * Compared on trimmed, case-insensitive values, because the same employer
+   * does not come back byte-identical from one board to the next. A blank
+   * applicant matches the records filed with no applicant (`profile IS NULL`)
+   * rather than matching everybody's.
+   */
+  findByCompany(company, profile = null) {
+    const applicant = String(profile || '').trim();
+    const clause = applicant ? 'lower(trim(profile)) = lower(trim(?))' : 'profile IS NULL';
+    const params = [String(company)];
+    if (applicant) params.push(applicant);
+    return (
+      this.db
+        .prepare(
+          `SELECT * FROM records
+             WHERE lower(trim(company)) = lower(trim(?))
+               AND ${clause}
+             ORDER BY id DESC LIMIT 1`,
+        )
+        .get(...params) || null
+    );
+  }
+
+  /**
+   * Does any record already point at this folder?
+   *
+   * Asked before a new submission is given one. Free on disk is not enough:
+   * the archive gets pruned, by the dashboard's delete and by hand, so a name
+   * can be gone from disk while a record still claims it. Handing that name to
+   * a second submission files the new documents at the old record's path, and
+   * the old record then shows the new one's resume.
+   */
+  dirPathTaken(dir) {
+    return Boolean(this.db.prepare('SELECT 1 FROM records WHERE dir_path = ? LIMIT 1').get(String(dir)));
   }
 
   /** Remove one record and its held draft. Returns the row that was removed. */

@@ -1,0 +1,88 @@
+NAME: Alex Souto
+HEADLINE: Senior Data Engineer
+LOCATION: Recife, PE, Brazil
+PHONE: +55 81 99963-8510
+EMAIL: alexsouto1995@gmail.com
+LINKEDIN: https://www.linkedin.com/in/alex-souto-de/
+
+SUMMARY
+Senior Data Engineer and Cloud Engineer with 9+ years of experience designing, developing, and maintaining cloud-based data platforms, distributed systems, and enterprise applications across SaaS, marketing technology, and business analytics environments. Extensive hands-on experience building scalable data pipelines, modernizing legacy systems, integrating third-party services, and developing reliable backend infrastructure across multi-cloud environments. Strong background in data architecture, relational and NoSQL databases, data warehousing, event-driven processing, serverless applications, and API-based integrations, with practical experience supporting both transactional workloads and large-scale analytical systems. Experienced in designing secure, resilient cloud solutions, optimizing distributed data processing, troubleshooting complex production issues, and implementing automated deployment and monitoring practices. Skilled in translating business requirements into practical technical designs, improving data reliability and system performance, and delivering production-ready solutions that support evolving application and analytics needs.
+
+SKILLS
+Programming Languages: Python, SQL, Scala, Java, JavaScript, TypeScript, Bash
+Data Engineering & Pipelines: Azure Data Factory (ADF), Azure Databricks, Apache Spark, PySpark, Delta Lake, Apache Airflow, dbt, Azure Synapse Analytics, AWS Glue, Apache Kafka, ETL/ELT, CDC, Batch & Stream Processing
+Cloud Platforms & Architecture: Microsoft Azure, AWS, GCP, Azure PaaS, Azure Functions, Azure App Service, Azure Logic Apps, Azure Kubernetes Service (AKS), AWS Lambda, Azure Well-Architected Framework, Cloud Modernization, High Availability
+Databases & Data Warehousing: Azure SQL Database, Azure Cosmos DB, ADLS Gen2, Azure Blob Storage, SQL Server, PostgreSQL, MySQL, MongoDB, Snowflake, Amazon Redshift, Google BigQuery, Data Modeling, Query Optimization
+Backend & Integration: FastAPI, Flask, Node.js, REST APIs, Azure API Management (APIM), Azure Service Bus, Azure Event Hubs, Azure Event Grid, OAuth 2.0, Webhooks, Microservices, Serverless Applications
+Cloud & DevOps: Terraform, Docker, Kubernetes, Azure DevOps, GitHub Actions, Jenkins, Bicep, CI/CD, Infrastructure as Code (IaC), Azure Key Vault, Microsoft Entra ID
+Analytics & BI: Power BI, Tableau, Looker, DAX, Dimensional Modeling, Star Schema, Data Visualization
+Data Quality & Monitoring: Microsoft Purview, Great Expectations, Azure Monitor, Application Insights, Datadog, Data Validation, Data Lineage, Pipeline Monitoring
+Architecture & Design: Distributed Systems, Event-Driven Architecture, API-First Design, Enterprise Data Architecture, Lakehouse Architecture, HLD/LLD, Fault Tolerance, Scalability, Resilience, Architecture Diagrams, Technical Documentation
+Testing & Tooling: Pytest, Unit & Integration Testing, Postman, Git, Jira, Confluence, Jupyter Notebook, SQL Server Management Studio, Draw.io
+
+EXPERIENCE
+
+Company: Data-Sleek
+Title: Senior Data Engineer | Cloud Engineer
+Location: Los Angeles, California, United States (Remote)
+Dates: Apr 2023 – Present
+Bullets:
+Engineered backend integrations and cloud-based data workflows for EnrichLabs.ai, an AI-powered marketing automation platform that generates, schedules, and publishes content across multiple social media channels, implementing Python services, REST APIs, OAuth 2.0 authentication, webhook handlers, and asynchronous processing for platform integrations, account synchronization, publishing workflows, and campaign activity tracking.
+Architected Azure-based data ingestion and transformation workflows using Azure Data Factory, Azure Databricks, PySpark, and ADLS Gen2, handling structured customer records, campaign metadata, application events, and third-party API responses through incremental ingestion, Delta Lake tables, schema validation, and partitioned storage across raw and curated data layers.
+Implemented event-driven backend components with Azure Functions, Azure Service Bus, and Event Hubs, separating incoming application events from downstream processing while handling message retries, duplicate event detection, dead-letter queues, and asynchronous execution for workflows involving external API calls and variable processing times.
+Developed reusable data processing modules in Python and SQL across Azure Databricks and Azure SQL Database, applying Delta Lake MERGE operations, incremental loading, window functions, and optimized joins for customer activity datasets, campaign performance reporting, and historical analytics without repeatedly processing unchanged source records.
+Integrated Azure API Management with containerized backend services and serverless endpoints, configuring API routing, JWT validation, rate limiting, managed identities, and request logging while maintaining separate integration configurations for development and production environments and troubleshooting authentication failures across external SaaS providers.
+Designed relational and document-oriented data storage patterns using PostgreSQL, Azure SQL Database, Cosmos DB, and Blob Storage, maintaining normalized transactional records alongside flexible API payloads, processing metadata, and archived files while tuning indexes, query execution plans, and partition keys around application access patterns.
+Built ingestion and reporting workflows for business analytics using Azure Data Factory, dbt, Snowflake, and Power BI, consolidating operational records from SaaS applications, CRM integrations, and transactional databases into dimensional models with consistent customer identifiers, slowly changing attributes, and reusable SQL transformations.
+Automated cloud infrastructure provisioning and deployment through Terraform, Bicep, Docker, and GitHub Actions, configuring Azure Storage, Function Apps, managed identities, networking rules, and environment-specific application settings while integrating Key Vault references and deployment validation into CI/CD workflows.
+Optimized distributed data processing workloads in Databricks by inspecting Spark execution plans, identifying skewed joins, adjusting shuffle partitions, applying broadcast joins where appropriate, and tuning Delta Lake file organization while investigating failed pipeline runs caused by malformed source records, schema changes, and executor memory pressure.
+Implemented operational monitoring and recovery mechanisms across Azure Monitor, Application Insights, Log Analytics, and Databricks job metrics, capturing pipeline execution status, API latency, processing failures, and retry activity while maintaining architecture diagrams, deployment documentation, data flow specifications, and troubleshooting references for production cloud services.
+
+Company: Cloudforce
+Title: Senior Data Engineer
+Location: Oxon Hill, MD, United States (Remote)
+Dates: Mar 2020 – Mar 2023
+Bullets:
+Developed enterprise data integration pipelines using Azure Data Factory, Azure SQL Database, and ADLS Gen2, ingesting operational records from SQL Server, PostgreSQL, REST endpoints, and business applications through parameterized pipelines, watermark-based incremental extraction, and staged transformations across multiple source systems.
+Engineered distributed transformation jobs in Azure Databricks using Python, PySpark, and Spark SQL, processing large relational datasets and semi-structured JSON files through Delta Lake tables while applying schema enforcement, partition pruning, deduplication, and incremental upserts across analytical data layers.
+Implemented data warehouse models in Azure Synapse Analytics and SQL Server, organizing customer, financial, and operational reporting datasets into fact and dimension tables with surrogate keys, historical attributes, and pre-aggregated reporting structures while optimizing stored procedures, columnstore indexes, and complex SQL queries.
+Built serverless integration workflows with Azure Functions, Logic Apps, and Service Bus for enterprise application data exchange, handling scheduled API extraction, message serialization, transient service failures, and retry policies while persisting processing checkpoints and failed message details for controlled reprocessing.
+Migrated legacy SQL Server Integration Services packages and scheduled database jobs into Azure Data Factory and cloud-hosted processing components, replacing environment-specific connection configurations with managed identities, Key Vault secrets, parameterized datasets, and deployment configurations maintained through Azure DevOps.
+Integrated operational event streams through Azure Event Hubs and Apache Kafka, developing Python consumers and Spark Structured Streaming transformations that normalized incoming messages, handled late-arriving records, and persisted processed events into Delta Lake storage for downstream reporting and operational analysis.
+Developed backend data access services using Python, FastAPI, and Azure App Service, exposing validated REST endpoints for internal enterprise applications while implementing OAuth-based authentication, pagination, structured error responses, SQL connection pooling, and API request tracing through Application Insights.
+Optimized analytical workloads across Azure Synapse, PostgreSQL, and Azure SQL Database by reviewing query execution plans, revising join strategies, maintaining statistics, tuning indexes, and restructuring expensive transformations while addressing lock contention and resource utilization issues during concurrent ingestion and reporting jobs.
+Automated deployment and configuration of data platform resources through Terraform, Azure DevOps pipelines, and PowerShell, maintaining infrastructure definitions for storage accounts, data integration services, access policies, and monitoring resources while incorporating automated SQL validation and environment-specific deployment checks.
+Implemented data quality checks and operational diagnostics using SQL, Pytest, Great Expectations, and Azure Monitor, validating source-to-target record counts, business key uniqueness, referential consistency, and pipeline execution behavior while documenting data dependencies, integration interfaces, failure recovery procedures, and architecture decisions for enterprise data systems.
+
+Company: Geosoft Inc
+Title: Data Engineer | Backend Engineer
+Location: Rio de Janeiro, Brazil (On-site)
+Dates: May 2018 – Jan 2020
+Bullets:
+Developed Python-based ETL pipelines for enterprise applications using Pandas, SQLAlchemy, and PostgreSQL, extracting operational data from relational databases, CSV files, and third-party REST APIs while implementing incremental loading, record deduplication, and validation routines for customer records, transaction histories, and internal reporting datasets.
+Implemented backend services using Python, Flask, and SQLAlchemy, exposing REST APIs for business applications that handled data retrieval, record updates, file processing, and scheduled background operations while maintaining request validation, authentication middleware, pagination, and consistent error handling across service endpoints.
+Built automated data ingestion workflows using Apache Airflow, Python, and PostgreSQL, configuring DAG dependencies, scheduled extraction jobs, retry policies, and execution logging while maintaining staging tables and processing checkpoints for datasets arriving from multiple operational systems.
+Designed and optimized relational database structures in PostgreSQL and MySQL, creating normalized schemas, indexes, stored procedures, and SQL views for transactional applications while investigating slow queries, adjusting execution plans, and improving database access patterns across frequently used backend operations.
+Integrated AWS S3 and EC2 with existing backend services for document storage, scheduled data processing, and application deployment, implementing Python utilities for file uploads, metadata extraction, object organization, and batch processing while configuring environment variables, access permissions, and application logging.
+Developed asynchronous processing components using Celery and Redis for file imports, report generation, and external API synchronization, separating long-running operations from synchronous HTTP requests while implementing task retries, job status tracking, and safeguards against duplicate processing.
+Implemented automated testing and deployment workflows using Pytest, Docker, Git, and Jenkins, covering API endpoints, database operations, and data transformation functions while maintaining SQL migration scripts, application configuration files, and technical documentation for production releases.
+
+Company: Geosoft Inc
+Title: Backend Engineer
+Location: Rio de Janeiro, Brazil (On-site, Internship)
+Dates: Nov 2016 – Apr 2018
+Bullets:
+Developed and maintained backend functionality for internal business applications using Python, Django, and PostgreSQL, implementing REST endpoints, database models, form validation, and server-side business logic for customer information, administrative workflows, and operational record management.
+Implemented database queries and application data access components using SQL, Django ORM, and MySQL, creating relational tables, foreign key constraints, and reusable query methods while addressing inefficient database calls, inconsistent input handling, and data integrity issues identified during application testing.
+Integrated third-party REST APIs and internal services using Python and JSON, implementing authenticated HTTP requests, response parsing, input validation, and exception handling for workflows involving external business records, notification services, and application data synchronization.
+Developed scheduled scripts and backend utilities using Python, Bash, and Linux cron jobs for importing CSV files, processing application logs, updating database records, and generating operational reports while adding execution logging and basic recovery handling for failed processing tasks.
+Maintained backend application quality through Git, Postman, and Python unit tests, reproducing API defects, correcting database-related errors, updating existing service endpoints, and assisting with Docker-based development environments and deployment configuration for internal applications.
+
+EDUCATION
+School: Federal University of Pernambuco
+Degree: Bachelor's degree
+Field: Computer Science
+Dates: Apr 2012 – Sep 2016
+
+CERTIFICATIONS
+None

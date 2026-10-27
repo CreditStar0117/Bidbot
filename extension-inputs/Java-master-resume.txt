@@ -1,0 +1,100 @@
+NAME: Gaopeng Wang
+HEADLINE: Senior Software Engineer | Java & Spring Boot | Distributed Systems
+LOCATION: Wayne, NJ
+EMAIL: gaopeng.wang@outlook.com
+PHONE: +15512338584
+LINKEDIN: https://www.linkedin.com/in/gaopeng-wang/
+
+SUMMARY
+Senior Software Engineer with 12+ years of software development experience specializing in Java, Spring Boot, Angular, TypeScript, REST APIs, microservices, distributed systems, concurrency, and enterprise applications. Experienced in building and modernizing production systems across Google, NVIDIA, Veritas, and the University of California, including large-scale backend services, GPU testing infrastructure, enterprise data-governance platforms, and database-intensive applications. Strong hands-on experience with Java, Spring Boot, Hibernate/JPA, SQL, Kubernetes, Docker, MySQL, CI/CD, and automated testing. Proven background in improving application performance, automating engineering workflows, increasing system reliability, and building maintainable software for large-scale production environments. Hands-on experience decomposing legacy Java applications into Spring Boot microservices and developing Angular 14+ applications integrated with Java/Spring Boot backend services.
+
+SKILLS
+Programming & Frameworks: Java, Spring Boot, Spring Framework, Hibernate/JPA, JDBC, Kotlin, Python, TypeScript, Angular 14+, Angular/AngularJS, React, D3
+Backend & Architecture: RESTful APIs, Microservices, Distributed Systems, Object-Oriented Design, Concurrency, Multithreading, API Design, Backend Services
+Cloud & Infrastructure: Kubernetes, Docker, CI/CD, Linux, Bash Scripting, Containerized Applications, Automated Deployment, GCP
+Databases & Persistence: MySQL, PostgreSQL, SQL, MongoDB, Relational Databases, Data Modeling, Schema Design, Query Optimization
+Messaging: Apache Kafka
+Engineering Practices: Test-Driven Development (TDD), Unit Testing, Integration Testing, Automated Testing, Git, GitLab, Code Reviews, Performance Optimization, Production Troubleshooting, System Design, Root-Cause Analysis
+
+EXPERIENCE
+
+Company: Google
+Title: Software Engineer
+Location: New York, NY
+Dates: Mar 2022 – Present
+Bullets:
+Architected and delivered Java and Spring Boot microservices while decomposing legacy application functionality on Amazon Web Services (AWS) using PostgreSQL and Apache Kafka, increasing sustained throughput from 1,800 to 3,200 transactions per second and cutting p95 latency by 28%.
+Develop and optimize Java/Spring Boot backend services and Angular 14+ internal web applications supporting 13 distributed service components and high-volume production workflows, improving scalability and maintainability across interconnected systems.
+Optimize Java and Spring Boot service execution, database access, and REST API processing, targeting approximately 23% faster response times and 32% lower latency across performance-sensitive backend workflows.
+Refactor complex Java modules using object-oriented design and reusable service patterns, reducing duplicated business logic by approximately 26% across shared backend components.
+Strengthen full-stack application reliability through Test-Driven Development (TDD), automated testing, debugging, monitoring, and root-cause analysis, contributing to fewer recurring production failures across critical services.
+Expand unit and integration testing across Java service and Angular application components, increasing effective test coverage by approximately 38% for newly developed and refactored functionality.
+Apply Java concurrency and distributed-processing techniques to high-volume workloads, improving processing throughput by approximately 37% for parallelizable backend and microservice operations.
+Collaborate with product, platform, and engineering teams to design highly available Java/Spring Boot services and Angular-based internal applications processing 10M+ requests per day with 99.9% availability.
+
+Company: NVIDIA
+Title: Senior System Software Engineer
+Location: Santa Clara County, CA
+Dates: Feb 2018 – Feb 2022
+Bullets:
+Developed a scalable CUDA driver build and testing platform using Java, Spring Boot, Python, MySQL, concurrency, and Bash, automating validation across 1,000+ historical code revisions and multiple testing workflows.
+Built Java/Spring Boot services that enabled engineers to generate CUDA driver packages from historical source snapshots, reducing repetitive manual build preparation by approximately 70%.
+Designed concurrent Java processing components for parallel build and validation jobs, increasing testing throughput by approximately 40% across shared GPU infrastructure.
+Developed a Java-based GPU driver deployment service supporting approximately 200+ testing machines across multiple GPU clusters, automating installation and upgrade operations.
+Automated approximately 80% of repetitive GPU driver deployment activities through request-driven Java services, Kubernetes, Docker, and scripting, reducing machine-by-machine setup from hours to minutes.
+Implemented a regression-analysis service using Python, Kotlin, and REST APIs to search large commit histories and automatically identify problematic revisions, reducing regression investigation from hours to minutes.
+Automated driver build, regression isolation, benchmark execution, and driver deployment workflows, saving approximately 20+ engineer-hours per week across QA and development activities.
+Integrated Kubernetes and Docker into GPU testing environments, improving execution consistency and reducing environment-related failures by approximately 35%.
+Integrated MySQL with backend services to manage build metadata, execution status, test results, and revision histories across large-scale driver-validation workflows.
+Improved automated validation and reproducibility across CUDA testing environments, contributing to approximately 50% faster testing cycles for supported engineering workflows.
+
+Company: Veritas Technologies
+Title: Software Engineer
+Location: Mountain View, CA
+Dates: Mar 2017 – Jan 2018
+Bullets:
+Developed enterprise data-governance features for Veritas Data Insight using Java, TypeScript, Angular/AngularJS, and D3, supporting analysis of large organizational datasets across multiple data sources.
+Built a global data-storage visualization displaying geographically distributed customer information through an interactive world map, consolidating storage-location analysis into a single administrative dashboard.
+Developed hierarchical D3 treemap visualizations for large data-category datasets, improving usability and reducing the effort required to understand complex enterprise storage distributions.
+Integrated Angular frontend components with Java backend services and enterprise data sources, improving data delivery and responsiveness across visualization workflows.
+Refactored existing Java application modules and reusable components, reducing duplicated code by approximately 30% and simplifying subsequent feature development.
+Improved defect resolution through Java debugging, code reviews, and regression testing, contributing to approximately 24% fewer recurring defects in maintained components.
+Enhanced frontend and backend processing paths for enterprise dashboards, targeting approximately 25% faster response times for frequently accessed data-governance workflows.
+
+Company: University of California Office of the President
+Title: Java Developer
+Location: Oakland, CA
+Dates: Dec 2015 – Mar 2017
+Bullets:
+Modernized the applyUC admissions portal using Java and Spring Boot, supporting a centralized admissions application handling large volumes of applicant and academic information.
+Designed and maintained a complex relational database containing 100+ interconnected tables, supporting applicant profiles, academic records, standardized tests, and admissions workflows.
+Developed Java persistence and data-service components using Hibernate/JPA and SQL across the 100+ table database, improving maintainability of complex admissions data access.
+Optimized Hibernate mappings, SQL queries, and database access patterns, targeting approximately 24% faster data retrieval and 28% lower query latency for frequently used workflows.
+Implemented backend support for the 2016 SAT scoring format, integrating new validation and processing requirements into the existing UC admissions platform.
+Refactored Java service and persistence components into reusable layers, reducing duplicated code by approximately 32% across affected modules.
+Expanded unit and integration coverage around admissions functionality, improving test coverage by approximately 41% for newly implemented and refactored components.
+Troubleshot application and database issues during critical admissions periods, improving stability across high-volume processing workflows and reducing repeat defects.
+
+Company: FormFactor Inc.
+Title: Senior Electrical Design Engineer
+Location: Livermore, CA
+Dates: Jul 2009 – Aug 2013
+Bullets:
+Designed production-ready semiconductor probe-card solutions over a 4-year engineering tenure, translating complex customer electrical requirements into manufacturable designs.
+Coordinated customer, engineering, manufacturing, and vendor activities across 3+ stakeholder groups, supporting successful delivery of customer-specific semiconductor testing solutions.
+Investigated electrical and manufacturing issues across design and production workflows, improving troubleshooting efficiency and reducing repeated design iterations.
+Served as a primary technical contact throughout design and manufacturing cycles, coordinating technical requirements from initial specification through production release.
+
+EDUCATION
+School: University of Wisconsin-Madison
+Degree: Master's Degree
+Field: Electrical and Computer Engineering
+Dates: 2013 – 2015
+
+School: Nanyang Technological University, Singapore
+Degree: Bachelor's Degree
+Field: Electrical and Electronics Engineering
+Dates: 2005 – 2009
+
+CERTIFICATIONS
+None

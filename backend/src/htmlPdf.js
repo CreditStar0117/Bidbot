@@ -11,10 +11,13 @@ import { applyFont, encodeFor } from './pdf.js';
  * rather than duplicated in a renderer.
  *
  * It is a small subset of CSS, sized to the documents this server generates:
- * block flow with margins and padding, backgrounds and single-edge borders,
- * inline runs with their own weight and colour, unordered lists, and the
- * page-break hints. No floats and no positioning; of grid, only the one row
- * the resumes use -- `1fr auto` over inline items, the last one hard right.
+ * block flow with margins and padding, backgrounds and single-edge borders
+ * (solid or double),
+ * inline runs with their own weight and colour, small caps, centred lines,
+ * unordered lists, and the page-break hints; a serif stack is drawn in Times.
+ * No floats and no positioning; of grid, only the one row the resumes use --
+ * `1fr auto` over inline items, the last one hard right -- and of flex, only
+ * a caption between two `flex: 1` rules.
  */
 
 /* --- markup ---------------------------------------------------------------- */
@@ -186,7 +189,10 @@ const specificity = (parts) =>
   parts.reduce((total, part) => total + part.classes.length * 10 + (part.tag ? 1 : 0), 0);
 
 /** Properties a child takes from its parent, as CSS defines inheritance. */
-const INHERITED = ['color', 'font-size', 'font-weight', 'font-style', 'line-height', 'letter-spacing', 'text-transform'];
+const INHERITED = [
+  'color', 'font-family', 'font-size', 'font-weight', 'font-style', 'font-variant',
+  'line-height', 'letter-spacing', 'text-transform', 'text-align',
+];
 
 /** The declarations that apply to one node, parent values included. */
 export function computeStyle(node, ancestors, sheet, inherited) {
@@ -255,19 +261,53 @@ export function colour(value, variables) {
   return null;
 }
 
-/** "2px solid var(--teal)" -> { width, colour }. */
+/** "2px solid var(--teal)" -> { width, colour, double }. */
 function border(value, variables) {
   const raw = resolveVar(value ?? '', variables).trim();
   if (!raw || raw === '0' || raw === 'none') return null;
   const width = points((raw.match(/(-?[\d.]+(?:px|pt|mm|in)?)/) || [])[1], variables);
   if (!width) return null;
-  return { width, colour: colour((raw.match(/#[0-9a-f]{3,6}|rgba?\([^)]*\)/i) || [])[0], variables) || [0, 0, 0] };
+  return {
+    width,
+    colour: colour((raw.match(/#[0-9a-f]{3,6}|rgba?\([^)]*\)/i) || [])[0], variables) || [0, 0, 0],
+    double: /\bdouble\b/i.test(raw),
+  };
 }
 
 /* --- rendering -------------------------------------------------------------- */
 
 const BLOCK = new Set(['div', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'hr', 'body', 'section', 'article', 'header', 'footer', 'main', 'blockquote']);
 const isBlock = (node) => node.tag !== '#text' && BLOCK.has(node.tag);
+
+/**
+ * `display: flex` with an empty, bordered `flex: 1` item at each end: a
+ * section heading with a rule either side of its caption, the two rules
+ * sharing what is left of the line -- which centres the caption. Returns the
+ * items between the rules and the rules as { width, colour }, or null for any
+ * other flex row, which flows as blocks do. Shared with the .docx.
+ */
+export function ruledRow(node, style, ancestors, sheet) {
+  if (style.display !== 'flex') return null;
+  const items = (node.children || []).filter((child) => child.tag !== '#text' || child.text.trim());
+  if (items.length < 3 || items.some(isBlock)) return null;
+
+  const ruleOf = (item) => {
+    if (item.tag === '#text' || textOf(item).trim()) return null;
+    const own = computeStyle(item, [...ancestors, node], sheet, style);
+    if (!(parseFloat(own.flex ?? own['flex-grow']) > 0)) return null;
+    return border(own['border-top'] || own['border-bottom'], sheet.variables);
+  };
+  const before = ruleOf(items[0]);
+  const after = ruleOf(items[items.length - 1]);
+  if (!before || !after) return null;
+  return { caption: items.slice(1, -1), before, after };
+}
+
+/** A font stack naming the generic `serif` -- drawn in Times rather than Helvetica. */
+const SERIF = /(?:^|,)\s*serif\s*(?:,|$)/i;
+
+/** How big a lower-case letter is drawn in small caps, as browsers synthesise them. */
+const SMALL_CAPS = 0.7;
 
 /** The page-break hints, in both spellings: legacy page-break-* and CSS3 break-*. */
 const avoidsBreakInside = (style) => style['page-break-inside'] === 'avoid' || style['break-inside'] === 'avoid';
@@ -324,7 +364,9 @@ export function renderHtmlToPdf(html, { url } = {}) {
     const italic = style['font-style'] === 'italic';
     let want = weight === 'bold' ? (italic ? 'bolditalic' : 'bold') : italic ? 'italic' : 'normal';
     if (font.styles && !font.styles.has(want)) want = 'normal';
-    doc.setFont(font.family, want);
+    // Of the built-in faces, a serif stack gets Times. An embedded font is
+    // used for everything, as it always was.
+    doc.setFont(!font.styles && SERIF.test(style['font-family'] || '') ? 'times' : font.family, want);
     doc.setFontSize(points(style['font-size'] || `${baseSize}pt`, sheet.variables, baseSize) || baseSize);
     const ink = colour(style.color, sheet.variables) || [0, 0, 0];
     doc.setTextColor(...ink);
@@ -338,12 +380,44 @@ export function renderHtmlToPdf(html, { url } = {}) {
   // character, spaces included, as it does in a browser.
   const advanceOf = (value) => doc.getTextWidth(value) + doc.getCharSpace() * value.length;
 
+  /**
+   * A horizontal rule from `from` to `to`, centred on `y`. A double one is drawn
+   * as a browser draws it: two lines a third of its width each, a third apart.
+   */
+  const stroke = (from, to, y, { width, colour: ink, double }) => {
+    const thickness = width * MM_PER_PT;
+    doc.setDrawColor(...ink);
+    if (!double) {
+      doc.setLineWidth(thickness);
+      doc.line(from, y, to, y);
+      return;
+    }
+    doc.setLineWidth(thickness / 3);
+    doc.line(from, y - thickness / 3, to, y - thickness / 3);
+    doc.line(from, y + thickness / 3, to, y + thickness / 3);
+  };
+
+  /**
+   * A text node's runs. Small caps are drawn as a browser synthesises them:
+   * capitals at full size, lower-case letters as capitals at 70%.
+   */
+  const textRuns = (value, style) => {
+    if (style['font-variant'] !== 'small-caps') return [{ text: value, style, href: null }];
+    const size = points(style['font-size'] || `${baseSize}pt`, sheet.variables, baseSize) || baseSize;
+    const small = { ...style, 'font-size': `${size * SMALL_CAPS}pt` };
+    return value
+      .split(/(\p{Ll}+)/u)
+      .filter(Boolean)
+      .map((piece) =>
+        /\p{Ll}/u.test(piece) ? { text: piece.toUpperCase(), style: small, href: null } : { text: piece, style, href: null });
+  };
+
   /** Flatten a node's inline descendants into runs carrying their own style. */
   const runs = (node, style, ancestors) => {
     const out = [];
     for (const child of node.children || []) {
       if (child.tag === '#text') {
-        out.push({ text: child.text, style, href: null });
+        out.push(...textRuns(child.text, style));
         continue;
       }
       const childStyle = computeStyle(child, [...ancestors, node], sheet, style);
@@ -401,24 +475,30 @@ export function renderHtmlToPdf(html, { url } = {}) {
   /**
    * Draw runs as wrapped lines. Returns the height used. `trailing` runs, if
    * any, are drawn hard right on the first line, and every line stops short
-   * of them by `gap`.
+   * of them by `gap`. `rules`, if any, are drawn either side of the first
+   * line, `rules.gap` clear of it, and centre it as they do in a browser.
    */
-  const inline = (list, x, width, style, trailing = null, gap = 0) => {
+  const inline = (list, x, width, style, trailing = null, gap = 0, rules = null) => {
     const lineHeight = Number(style['line-height'] || bodyStyle['line-height'] || 1.2);
     const size = points(style['font-size'] || `${baseSize}pt`, sheet.variables, baseSize) || baseSize;
     const step = size * lineHeight * MM_PER_PT;
+    const centred = rules || style['text-align'] === 'center';
 
     const trailingWidth = trailing ? runsWidth(trailing) : 0;
     const fullWidth = width;
     if (trailing) width = Math.max(fullWidth - trailingWidth - gap, fullWidth / 3);
     let first = true;
 
-    // Split every run into words, keeping each word's style with it.
+    // Split every run into words, keeping each word's style with it. Spaces,
+    // tabs and line breaks collapse to one space first, as HTML collapses them
+    // -- source indentation between two inline elements is one space, not ten
+    // -- but a no-break space is kept, as it is in a browser.
     const words = [];
     for (const run of list) {
-      const value = style.transform === 'uppercase' || run.style['text-transform'] === 'uppercase'
+      const value = (style.transform === 'uppercase' || run.style['text-transform'] === 'uppercase'
         ? run.text.toUpperCase()
-        : run.text;
+        : run.text
+      ).replace(/[ \t\n\r\f]+/g, ' ');
       // A left margin opens its gap before the run and a right margin after it.
       // Both on one side would leave the element hard against its neighbour --
       // which is what a separator bullet between contact details shows first.
@@ -445,8 +525,27 @@ export function renderHtmlToPdf(html, { url } = {}) {
           at += advanceOf(value) + (run.spaceAfter || 0) * MM_PER_PT;
         }
       }
+      const opening = first;
       first = false;
       let cursor = x;
+      if (centred) {
+        // Spaces at the end of a line take no room when it is centred.
+        let end = line.length;
+        while (end && (line[end - 1].space || line[end - 1].pad)) end -= 1;
+        const textWidth = line.slice(0, end).reduce((total, word) => total + word.advance, 0);
+        cursor += Math.max(0, (width - textWidth) / 2);
+        if (rules && opening && state.draw) {
+          const middle = state.y + step / 2;
+          const rule = (from, to, { width: thickness, colour: ink }) => {
+            if (to <= from) return;
+            doc.setDrawColor(...ink);
+            doc.setLineWidth(thickness * MM_PER_PT);
+            doc.line(from, middle, to, middle);
+          };
+          rule(x, cursor - rules.gap, rules.before);
+          rule(cursor + textWidth + rules.gap, x + fullWidth, rules.after);
+        }
+      }
       for (const word of line) {
         if (word.pad) {
           cursor += word.pad * MM_PER_PT;
@@ -469,8 +568,9 @@ export function renderHtmlToPdf(html, { url } = {}) {
       if (word.pad) {
         // A margin, like a space, must not indent the start of a wrapped line.
         if (!line.length) continue;
+        word.advance = word.pad * MM_PER_PT;
         line.push(word);
-        lineWidth += word.pad * MM_PER_PT;
+        lineWidth += word.advance;
         continue;
       }
       setFont(word.style);
@@ -479,6 +579,7 @@ export function renderHtmlToPdf(html, { url } = {}) {
       // A space must not start a line -- checked after the wrap, or the space
       // that caused the break becomes the next line's indent.
       if (word.space && !line.length) continue;
+      word.advance = advance;
       line.push(word);
       lineWidth += advance;
     }
@@ -486,8 +587,16 @@ export function renderHtmlToPdf(html, { url } = {}) {
     return used;
   };
 
-  /** A block's inline content: a `1fr auto` row when it is one, wrapped text otherwise. */
+  /**
+   * A block's inline content: a caption between rules or a `1fr auto` row when
+   * it is one, wrapped text otherwise.
+   */
   const inlineOrRow = (node, style, ancestors, x, width) => {
+    const ruled = ruledRow(node, style, ancestors, sheet);
+    if (ruled) {
+      const gap = points(style['column-gap'] || style.gap, sheet.variables, baseSize) * MM_PER_PT;
+      return inline(runs({ ...node, children: ruled.caption }, style, ancestors), x, width, style, null, 0, { ...ruled, gap });
+    }
     const row = splitRow(node, style, ancestors);
     return row
       ? inline(row.left, x, width, style, row.right, row.gap)
@@ -518,11 +627,7 @@ export function renderHtmlToPdf(html, { url } = {}) {
       const rule = border(style['border-top'] || style.border, sheet.variables);
       if (rule) {
         room(rule.width * MM_PER_PT);
-        if (state.draw) {
-          doc.setDrawColor(...rule.colour);
-          doc.setLineWidth(rule.width * MM_PER_PT);
-          doc.line(x, state.y, x + width, state.y);
-        }
+        if (state.draw) stroke(x, x + width, state.y, rule);
         state.y += rule.width * MM_PER_PT;
       }
       state.y += margin.bottom * MM_PER_PT;
@@ -558,7 +663,7 @@ export function renderHtmlToPdf(html, { url } = {}) {
 
     if (blocks.length) {
       flow(blocks, [...ancestors, node], inner.x, inner.width, style);
-    } else if (node.tag === 'li') {
+    } else if (node.tag === 'li' || style.display === 'list-item') {
       // ul li::before puts a bullet in the padding to the left of the text. The
       // marker is drawn before that text is laid out, so the first line has to
       // be known to fit before the marker goes down -- otherwise the page
@@ -583,11 +688,7 @@ export function renderHtmlToPdf(html, { url } = {}) {
     const under = border(style['border-bottom'], sheet.variables);
     if (under) {
       room(under.width * MM_PER_PT);
-      if (state.draw) {
-        doc.setDrawColor(...under.colour);
-        doc.setLineWidth(under.width * MM_PER_PT);
-        doc.line(x, state.y, x + width, state.y);
-      }
+      if (state.draw) stroke(x, x + width, state.y, under);
       state.y += under.width * MM_PER_PT;
     }
 

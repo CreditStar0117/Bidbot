@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jordan Silva - Senior Data Analyst</title>
+  <script src="./data.js"></script>
+  <style>
+    /* DA-1: classic serif. A blue rule over a centred small-caps blue name,
+       centred contact lines split by diamonds, and centred small-caps blue
+       section headings with a rule either side. Each role is "Role, dates"
+       over "Company - Location"; skills are bullets in two columns.
+
+       Written for the backend's PDF renderer as well as the browser: class and
+       tag selectors only (no #ids, no ::before/::marker, no > + ~), unitless
+       line-heights, and hex colours. The renderer draws the centring, the small
+       caps, the serif face and the heading rules; the two skill columns it
+       cannot draw, and lays out as one. The header and headings set
+       margin-top/margin-bottom as longhands because the .docx reads only
+       those. */
+    :root {
+      --ink: #111111;
+      --body: #1c1c1c;
+      --blue: #2a86c8;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0 auto;
+      padding: 32px 48px 44px;
+      max-width: 8.5in;
+      font-family: "Times New Roman", Times, "Liberation Serif", serif;
+      font-size: 14px;
+      line-height: 1.35;
+      color: var(--body);
+      background: #ffffff;
+    }
+
+    a {
+      color: var(--body);
+      text-decoration: none;
+    }
+
+    /* ---------- Header ---------- */
+    hr.top-rule {
+      margin-top: 0;
+      margin-bottom: 12px;
+      border: 0;
+      border-top: 1.5px solid var(--blue);
+    }
+
+    h1.name {
+      margin-top: 0;
+      margin-bottom: 6px;
+      font-size: 32px;
+      font-weight: 700;
+      font-variant: small-caps;
+      letter-spacing: 0.5px;
+      line-height: 1.15;
+      text-align: center;
+      color: var(--blue);
+    }
+
+    .title {
+      margin: 0 0 2px;
+      font-size: 14px;
+      text-align: center;
+      color: var(--ink);
+    }
+
+    .contact {
+      margin: 0 0 2px;
+      font-size: 13px;
+      text-align: center;
+      color: var(--ink);
+    }
+
+    .contact .sep {
+      margin: 0 5px;
+      font-size: 10px;
+    }
+
+    /* ---------- Sections ---------- */
+    /* The caption between two rules that share what is left of the line. */
+    h2.section {
+      display: flex;
+      align-items: center;
+      column-gap: 12px;
+      margin-top: 14px;
+      margin-bottom: 6px;
+      font-size: 16px;
+      font-weight: 700;
+      font-variant: small-caps;
+      letter-spacing: 0.5px;
+      line-height: 1.2;
+      text-align: center;
+      color: var(--blue);
+    }
+
+    h2.section .rule {
+      flex: 1;
+      border-top: 1px solid var(--blue);
+    }
+
+    .summary {
+      margin: 0;
+      text-align: justify;
+    }
+
+    /* ---------- Skills ---------- */
+    .skills {
+      column-count: 2;
+      column-gap: 32px;
+      padding-left: 18px;
+    }
+
+    .skills p {
+      display: list-item;
+      list-style: disc;
+      margin: 0 0 2px;
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+
+    .skills .label,
+    .skills .colon {
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    /* ---------- Experience ---------- */
+    .job {
+      margin-top: 10px;
+    }
+
+    .job-head {
+      break-inside: avoid;
+      page-break-inside: avoid;
+      break-after: avoid;
+      page-break-after: avoid;
+    }
+
+    .job-line,
+    .job-place {
+      margin: 0;
+    }
+
+    .role,
+    .company {
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    ul {
+      margin: 3px 0 0;
+      padding-left: 22px;
+      list-style: disc;
+    }
+
+    ul li {
+      margin-bottom: 2px;
+      text-align: justify;
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+
+    /* ---------- Education ---------- */
+    .edu-item {
+      margin-bottom: 6px;
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+
+    .degree,
+    .edu-place {
+      margin: 0;
+    }
+
+    .school {
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    @media print {
+      body {
+        padding: 0;
+      }
+
+      h2.section {
+        break-after: avoid;
+        page-break-after: avoid;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <hr class="top-rule">
+  <h1 class="name">Jordan Silva</h1>
+  <p class="title">Senior Data Analyst</p>
+  <!-- Text entries go on the first line and links on the second, each set
+       split by the first line's separator. -->
+  <p class="contact">
+    Florianópolis, SC<span class="sep"> ◆ </span>+55 48 90000-0000<span class="sep"> ◆ </span>jordan.silva@example.com
+  </p>
+  <p class="contact links"><a href="https://www.linkedin.com/in/jordansilva">LinkedIn</a><span
+      class="sep"> ◆ </span><a href="https://jordansilva.dev/">jordansilva.dev</a></p>
+
+  <h2 class="section"><span class="rule"></span><span class="caption">Professional Summary</span><span class="rule"></span></h2>
+  <p class="summary" id="summary">Data Analyst with 10+ years of experience turning data into strategic decisions and
+    measurable results. Specialist in advanced SQL, Power BI, Python and end-to-end ETL, with a record of technical
+    leadership and operational optimisation across complex, regulated environments.</p>
+
+  <h2 class="section"><span class="rule"></span><span class="caption">Skills</span><span class="rule"></span></h2>
+  <div class="skills" id="skills">
+    <p><span class="label">Advanced SQL</span><span class="colon">:</span> CTEs, Window Functions, Procedures, Query
+      Optimisation</p>
+    <p><span class="label">Power BI</span><span class="colon">:</span> Dimensional Modelling (Star Schema), DAX, Power
+      Query, Governance, Executive Dashboards</p>
+    <p><span class="label">Python for Data</span><span class="colon">:</span> Pandas, NumPy</p>
+    <p><span class="label">Cloud Platforms</span><span class="colon">:</span> Azure Synapse, AWS S3, GCP BigQuery</p>
+  </div>
+
+  <h2 class="section"><span class="rule"></span><span class="caption">Professional Experience</span><span class="rule"></span></h2>
+
+  <div class="job">
+    <div class="job-head">
+      <p class="job-line"><span class="role">Data Analyst</span>, <span class="dates">01/2023 – 08/2025</span></p>
+      <p class="job-place"><span class="company">Northwind Digital</span> - <span class="location">Florianópolis,
+          SC</span></p>
+    </div>
+    <ul data-exp="0">
+      <li>Built ETL pipelines in SQL and Python (Pandas, PySpark) feeding a data lake on Azure Synapse, with governance
+        pipelines on Databricks and Airflow.</li>
+      <li>Developed executive Power BI dashboards consolidating liquidity, conversion and fraud KPIs in real time.</li>
+    </ul>
+  </div>
+
+  <div class="job">
+    <div class="job-head">
+      <p class="job-line"><span class="role">Fiscal Data Analyst</span>, <span class="dates">01/2015 – 01/2023</span>
+      </p>
+      <p class="job-place"><span class="company">Contoso Accounting</span> - <span class="location">Joinville,
+          SC</span></p>
+    </div>
+    <ul data-exp="1">
+      <li>Implemented ETL processes (SQL + Python) for tax audits of 500+ companies, cutting manual effort by 70%.</li>
+      <li>Modelled databases and built governance dashboards in Power BI with compliance and efficiency KPIs.</li>
+    </ul>
+  </div>
+
+  <h2 class="section"><span class="rule"></span><span class="caption">Education</span><span class="rule"></span></h2>
+  <!-- The first edu item is the pattern: copied once per EDUCATION entry, with
+       its first degree line copied once per degree, as "Degree, Field". -->
+  <div class="edu">
+    <div class="edu-item">
+      <p class="degree">Bachelor's degree, Software Engineering</p>
+      <p class="edu-place"><span class="school">Universidade Federal de Santa Catarina</span>, <span
+          class="year">2011 – 2015</span></p>
+    </div>
+  </div>
+
+  <!-- The first cert item is the pattern, copied once per CERTIFICATIONS
+       entry. The whole section is removed when there are none. -->
+  <div class="cert-section">
+    <h2 class="section"><span class="rule"></span><span class="caption">Certifications</span><span class="rule"></span></h2>
+    <ul class="certs">
+      <li class="cert-item">Building Data Engineering Pipelines with Python (2024)</li>
+      <li class="cert-item">Advanced SQL for Data Scientists (2020)</li>
+    </ul>
+  </div>
+
+  <script type="module">
+    // Renders the page from the `resume` global that data.js declares, the
+    // same way the extension fills this template when it builds a resume. The
+    // extension strips both scripts before building.
+    if (typeof resume !== "undefined") render(resume);
+
+    function render(resume) {
+      const $ = (sel, root = document) => root.querySelector(sel);
+      const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
+      const isLink = (s) => /^https?:\/\//i.test(s) || /^(www\.)?[\w-]+\.(com|io|dev|me)\//i.test(s);
+
+      // Joins items onto a line with the template's diamond between them.
+      const fillLine = (line, items) => {
+        line.replaceChildren();
+        items.forEach((item, i) => {
+          if (i) {
+            const sep = document.createElement("span");
+            sep.className = "sep";
+            sep.textContent = " ◆ ";
+            line.append(sep);
+          }
+          if (isLink(item)) {
+            const a = document.createElement("a");
+            a.href = /^https?:\/\//i.test(item) ? item : `https://${item}`;
+            a.textContent = /linkedin\.com/i.test(item)
+              ? "LinkedIn"
+              : /github\.com/i.test(item)
+                ? "GitHub"
+                : item.replace(/^https?:\/\/(www\.)?/i, "").replace(/\/$/, "");
+            line.append(a);
+          } else {
+            line.append(item);
+          }
+        });
+      };
+
+      // Header: CONTACT is [name, title, location, phone, email, link, ...].
+      const [name, title, ...contact] = resume.CONTACT || [];
+      if (name) {
+        $("h1.name").textContent = name;
+        document.title = title ? `${name} - ${title}` : name;
+      }
+      if (title) $(".title").textContent = title;
+      if (contact.length) {
+        fillLine($("p.contact"), contact.filter((s) => !isLink(s)));
+        fillLine($("p.contact.links"), contact.filter(isLink));
+      }
+
+      $("#summary").textContent = resume.SUMMARY || "";
+
+      // Skills: text before the first ":" is the label, the colon its own span.
+      const skills = $("#skills");
+      skills.replaceChildren();
+      for (const text of resume.SKILLS || []) {
+        const p = document.createElement("p");
+        const i = text.indexOf(":");
+        if (i === -1) {
+          p.textContent = text;
+        } else {
+          const label = document.createElement("span");
+          label.className = "label";
+          label.textContent = text.slice(0, i);
+          const colon = document.createElement("span");
+          colon.className = "colon";
+          colon.textContent = ":";
+          p.append(label, colon, " " + text.slice(i + 1).trim());
+        }
+        skills.appendChild(p);
+      }
+
+      // Experience: the first job is the pattern — [company, title, location, dates, ...bullets].
+      const jobs = $$(".job");
+      (resume.EXPERIENCE || []).forEach(([company, role, location, dates, ...bullets], i) => {
+        const job = jobs[0].cloneNode(true);
+        $(".company", job).textContent = company || "";
+        $(".role", job).textContent = role || "";
+        $(".location", job).textContent = location || "";
+        $(".dates", job).textContent = dates || "";
+        const ul = $("ul[data-exp]", job);
+        ul.dataset.exp = i;
+        ul.replaceChildren();
+        for (const text of bullets) {
+          const li = document.createElement("li");
+          li.textContent = text;
+          ul.appendChild(li);
+        }
+        jobs[0].before(job);
+      });
+      jobs.forEach((j) => j.remove());
+
+      // Education: [school, [[degree, field], ...], year].
+      const schools = $$(".edu-item");
+      if (resume.EDUCATION?.length) {
+        for (const [school, degrees, year] of resume.EDUCATION) {
+          const item = schools[0].cloneNode(true);
+          $(".school", item).textContent = school || "";
+          $(".year", item).textContent = year || "";
+          const lines = $$(".degree", item);
+          for (const d of degrees || []) {
+            const line = lines[0].cloneNode(true);
+            line.textContent = Array.isArray(d) ? d.filter(Boolean).join(", ") : d;
+            lines[0].before(line);
+          }
+          lines.forEach((l) => l.remove());
+          schools[0].before(item);
+        }
+        schools.forEach((s) => s.remove());
+      }
+
+      // Certifications: one per name; with none, the whole section goes.
+      const certs = $$(".cert-item");
+      if (resume.CERTIFICATIONS?.length) {
+        for (const cert of resume.CERTIFICATIONS) {
+          const item = certs[0].cloneNode(true);
+          item.textContent = cert;
+          certs[0].before(item);
+        }
+        certs.forEach((c) => c.remove());
+      } else {
+        $(".cert-section")?.remove();
+      }
+    }
+  </script>
+
+</body>
+
+</html>

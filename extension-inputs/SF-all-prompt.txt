@@ -1,0 +1,643 @@
+# UNIVERSAL SALESFORCE RESUME TAILORING PROMPT
+
+Act as an expert Salesforce technical recruiter, Salesforce hiring manager, ATS optimization specialist, and professional resume writer with deep knowledge of the Salesforce ecosystem.
+
+I will provide my complete Master Resume and a Salesforce Job Description (JD).
+
+Your task is to create a fully tailored, technically detailed, ATS-friendly resume that aligns as closely as possible with the JD while remaining realistic, accurate, professional, and human-written.
+
+This prompt must work for **ALL Salesforce-related job descriptions**, including but not limited to:
+
+- Salesforce Developer
+- Senior Salesforce Developer
+- Salesforce Administrator
+- Senior Salesforce Administrator
+- Salesforce Technical Lead
+- Salesforce Technical Architect
+- Salesforce Solution Architect
+- Salesforce Application Architect
+- Salesforce Platform Developer
+- Salesforce Integration Developer
+- Salesforce Consultant
+- Salesforce Business Systems Analyst
+- Salesforce CPQ / Revenue Cloud Developer
+- Salesforce Service Cloud Developer
+- Salesforce Sales Cloud Developer
+- Salesforce Experience Cloud Developer
+- Salesforce OmniStudio / Vlocity Developer
+- Salesforce Industries Developer
+- Salesforce Data Cloud Developer
+- Salesforce Marketing Cloud Developer
+- Salesforce Agentforce / AI Developer
+- Salesforce DevOps Engineer
+- Salesforce CRM Engineer
+- Salesforce Full-Stack Developer
+- Salesforce Platform Engineer
+- Salesforce Production Support Engineer
+
+Automatically identify the specific role, seniority, technical stack, Salesforce products, responsibilities, industry, and business expectations from the JD.
+
+Do not use a generic Salesforce resume for every application.
+
+**The resume must dynamically adapt to each JD.**
+
+---
+
+## STEP 1 — ANALYZE THE JOB DESCRIPTION
+
+Read the entire JD carefully before generating the resume.
+
+Identify and prioritize:
+
+1. Target Salesforce role and seniority level
+2. Mandatory Salesforce Clouds and products
+3. Required programming languages and frameworks
+4. Salesforce development and configuration requirements
+5. Integration technologies and architecture patterns
+6. Data management and migration requirements
+7. Security and governance requirements
+8. Salesforce DevOps, testing, and deployment requirements
+9. Business processes and industry/domain knowledge
+10. Stakeholder collaboration and leadership expectations
+11. Preferred qualifications and certifications
+12. Most important ATS keywords and exact technical phrases
+
+Internally classify JD requirements as:
+
+- Critical requirements
+- Core technical requirements
+- Preferred qualifications
+- Business/domain requirements
+- Soft skills and delivery expectations
+
+Identify the 15–25 most important keywords.
+
+Use these keywords naturally throughout the resume wherever supported by my actual experience.
+
+Do not add unsupported technologies simply to increase keyword matching.
+
+---
+
+## STEP 2 — AUTOMATICALLY ADAPT TO THE SALESFORCE ROLE
+
+Determine the primary focus of the JD and adjust the resume accordingly.
+
+**For Salesforce Developer / Senior Developer roles:**
+
+Prioritize Apex, Apex Triggers, LWC, Aura, Visualforce, SOQL, SOSL, Salesforce Flow, asynchronous Apex, APIs, governor limits, debugging, and testing.
+
+**For Salesforce Administrator roles:**
+
+Prioritize Flow Builder, user management, permission sets, sharing rules, validation rules, approval processes, reports, dashboards, data quality, configuration, production support, and stakeholder requirements.
+
+**For Salesforce Technical Lead roles:**
+
+Prioritize technical design, reusable components, code reviews, architecture collaboration, development standards, release quality, complex integrations, troubleshooting, and cross-functional delivery.
+
+**For Salesforce Architect roles:**
+
+Prioritize solution design, integration architecture, data architecture, security architecture, scalability, platform limits, design tradeoffs, governance, enterprise patterns, and technical decision-making.
+
+Distinguish architecture participation from full architectural ownership.
+
+**For Salesforce Integration roles:**
+
+Prioritize REST APIs, SOAP APIs, Apex Callouts, OAuth 2.0, Named Credentials, External Credentials, Platform Events, Change Data Capture, JSON, middleware patterns, asynchronous processing, and error handling.
+
+**For Salesforce CPQ / Revenue Cloud roles:**
+
+Prioritize supported Salesforce CPQ exposure, opportunity workflows, subscription processes, quote-related concepts, pricing-rule troubleshooting, revenue workflows, and billing integrations.
+
+Do not invent direct implementation experience with advanced CPQ capabilities that my master resume does not establish.
+
+**For Salesforce Service Cloud roles:**
+
+Prioritize case management, routing, assignment rules, escalation, service automation, entitlement-style workflows, knowledge management, Experience Cloud, and support operations.
+
+**For Salesforce Sales Cloud roles:**
+
+Prioritize accounts, contacts, opportunities, sales automation, pipeline visibility, approvals, CRM reporting, and integrations.
+
+**For Salesforce Experience Cloud roles:**
+
+Prioritize authenticated portals, external-user access, self-service, case visibility, knowledge articles, LWC, sharing rules, and customer/partner experiences.
+
+**For Salesforce OmniStudio / Vlocity roles:**
+
+Prioritize OmniScripts, FlexCards, DataRaptors, Integration Procedures, guided intake, Salesforce Industries patterns, and integration design to the extent supported by the master resume.
+
+**For Salesforce Data Cloud roles:**
+
+Prioritize transferable skills in CRM data architecture, data mapping, data migration, integration, governance, identity concepts, and data quality.
+
+Do not invent hands-on Data Cloud implementations.
+
+**For Salesforce Marketing Cloud roles:**
+
+Prioritize transferable CRM integration, API, automation, customer data, and platform skills.
+
+Do not claim hands-on AMPscript, Journey Builder, or Marketing Cloud implementation unless documented in my master resume.
+
+**For Salesforce Agentforce / AI roles:**
+
+Prioritize AI-ready workflow design, case triage, knowledge grounding concepts, data quality, automation, security boundaries, and Agentforce-aware solution planning.
+
+Do not turn Agentforce awareness into unsupported production implementation experience.
+
+**For Salesforce DevOps roles:**
+
+Prioritize Salesforce DX, Salesforce CLI, Git, CI/CD, automated testing, deployment validation, sandboxes, source control, release management, and troubleshooting.
+
+**For Salesforce Business Analyst / Consultant roles:**
+
+Prioritize requirements analysis, business process mapping, stakeholder collaboration, CRM configuration, user acceptance testing, documentation, consulting delivery, and business outcomes.
+
+For hybrid roles, combine the relevant categories according to the JD's actual emphasis.
+
+Do not force every JD into a single role category.
+
+---
+
+## STEP 3 — USE MY ACTUAL CAREER HISTORY
+
+My master resume is the authoritative source of my experience.
+
+My primary employment history is:
+
+**Docker, Inc.**
+Senior Salesforce Developer / Administrator
+December 2024 – Present
+Seattle, WA | Remote
+
+**Amazon Web Services (AWS)**
+Senior Salesforce Developer / Administrator
+July 2023 – December 2024
+Seattle, WA
+
+**Amazon Web Services (AWS)**
+Salesforce Developer
+October 2021 – July 2023
+Seattle, WA
+
+**Deloitte Consulting**
+Salesforce Developer
+February 2019 – September 2021
+Gilbert, AZ
+
+Additional experience:
+
+**Arizona State University**
+IT Support Specialist
+June 2016 – December 2018
+
+**EY**
+Risk Advisory Intern
+June 2018 – August 2018
+
+Never change my employers, official job titles, employment dates, or education.
+
+Use my complete master resume to determine which technologies, responsibilities, and accomplishments belong to each position.
+
+### Employer-specific tailoring
+
+**Docker**
+
+Focus on recent senior-level Salesforce engineering, Apex, LWC, Flow, integrations, OmniStudio-related work, Salesforce Clouds, security, automation modernization, DevOps, and architecture participation.
+
+**AWS — Senior Salesforce Developer**
+
+Focus on enterprise Salesforce development, Sales Cloud, Service Cloud, Experience Cloud, integrations, event-driven architecture, platform security, workflow modernization, reporting, and Agile delivery.
+
+**AWS — Salesforce Developer**
+
+Focus on documented Java, Spring Boot, REST APIs, SQL, Angular, subscription billing, backend services, enterprise integrations, and application performance.
+
+Connect this experience to Salesforce requirements through genuinely transferable engineering capabilities.
+
+**Deloitte**
+
+Focus on Salesforce development, insurance and healthcare CRM, Apex, Visualforce, administration, access control, Java, SQL, Angular, financial systems, and consulting.
+
+Use early-career experience only when relevant.
+
+Never invent responsibilities or transfer accomplishments between employers.
+
+---
+
+## STEP 4 — CREATE THE PROFESSIONAL SUMMARY
+
+Write exactly **6–7 sentences**.
+
+The summary must:
+
+- Start with the target Salesforce role or a truthful closely related professional identity.
+- Reflect my actual career seniority.
+- Include the JD's most important supported Salesforce technologies.
+- Highlight relevant Salesforce Clouds and platform capabilities.
+- Mention architecture, development, integration, administration, or consulting according to the JD.
+- Include relevant business domains and measurable achievements when supported.
+- Demonstrate ownership, collaboration, and production delivery experience.
+
+Do not reuse the same summary for different job descriptions.
+
+Avoid generic statements, excessive buzzwords, and unsupported claims.
+
+---
+
+## STEP 5 — WRITE PROFESSIONAL EXPERIENCE
+
+Use reverse chronological order.
+
+### DOCKER, INC.
+
+Write exactly **12 bullet points**.
+
+Each bullet must contain **20–25 words**.
+
+### AMAZON WEB SERVICES — SENIOR SALESFORCE DEVELOPER / ADMINISTRATOR
+
+Write exactly **10 bullet points**.
+
+Each bullet must contain **20–25 words**.
+
+### AMAZON WEB SERVICES — SALESFORCE DEVELOPER
+
+Write exactly **9 bullet points**.
+
+Each bullet must contain **20–25 words**.
+
+### DELOITTE CONSULTING
+
+Write exactly **9 bullet points**.
+
+Each bullet must contain **20–25 words**.
+
+### OPTIONAL EARLY CAREER EXPERIENCE
+
+Include Arizona State University and EY only when relevant to the target JD.
+
+Use 2–3 concise bullet points per relevant position.
+
+### Mandatory bullet-writing rules
+
+Every bullet must:
+
+1. Begin with a strong, varied action verb.
+2. Describe a specific technical responsibility or achievement.
+3. Include relevant technologies and exact JD terminology when supported.
+4. Explain what was built, configured, integrated, improved, supported, or delivered.
+5. Include business context or a technical outcome.
+6. Contain exactly 20–25 words for the four primary positions.
+7. Sound natural, credible, and human-written.
+
+Use this general structure:
+
+**Action + Technology + Implementation or Responsibility + Business Context + Outcome**
+
+Avoid writing every bullet with the same sentence pattern.
+
+Vary the focus across:
+
+- Hands-on development
+- System configuration
+- Technical architecture
+- Integrations
+- Automation
+- Data management
+- Security
+- Testing and deployment
+- Performance optimization
+- Production troubleshooting
+- Cross-functional collaboration
+- Business process improvement
+
+**Important:** Make the bullets closely match the actual responsibilities in the JD through truthful descriptions of my career.
+
+Do not simply copy the JD and convert each requirement into an invented achievement.
+
+### Measurable achievements
+
+Reuse documented metrics only in their original context.
+
+Known metrics from my master resume include:
+
+- Approximately 20% reduction in email-based follow-ups
+- 15.8% reduction in manual reconciliation effort
+- 13.4% reduction in data retrieval latency
+- 11.2% reduction in regression issues
+- 12.5% reduction in manual lookup effort
+- 10.7% improvement in processing performance
+
+Do not invent new percentages, user counts, financial impact, or other metrics.
+
+When a measurable result is unavailable, explain the technical or operational impact without fabricating numbers.
+
+---
+
+## STEP 6 — BUILD DYNAMIC TECHNICAL SKILLS
+
+Create **5–7 skill categories** based on the JD.
+
+Each category should contain approximately **8–15 relevant skills**, when enough verified skills exist.
+
+Do not force unrelated skills into a category just to reach a number.
+
+Possible categories:
+
+- Salesforce Platforms & Clouds
+- Salesforce Development & Customization
+- Salesforce Administration & Automation
+- Salesforce Architecture & Integration
+- Programming Languages & Frameworks
+- Data Management & Security
+- DevOps, Testing & Delivery
+- OmniStudio & Salesforce Industries
+- AI & Agentforce Concepts
+- Business Analysis & Consulting Tools
+
+Select and combine only the most relevant categories.
+
+Prioritize the JD's exact terminology.
+
+Order the most important technical skills first.
+
+Only include skills supported by my master resume.
+
+For conceptual exposure, use appropriately qualified terminology.
+
+---
+
+## STEP 7 — SELECT RELEVANT CERTIFICATIONS
+
+Choose only relevant certifications from my actual certification list:
+
+- Salesforce Certified Platform Developer II
+- Salesforce Certified Application Architect
+- Salesforce Certified Data Architecture & Management Designer
+- Salesforce Certified Sharing and Visibility Designer
+- Vlocity Platform Developer
+- Salesforce Certified Platform App Builder
+- Salesforce Certified Administrator
+- Salesforce Certified Platform Developer I
+
+For architect roles, prioritize architecture certifications.
+
+For developer roles, prioritize Platform Developer II and Platform Developer I.
+
+For administrator roles, prioritize Salesforce Administrator and Platform App Builder.
+
+For OmniStudio/Vlocity roles, prioritize the Vlocity certification.
+
+Never invent additional certifications.
+
+---
+
+## STEP 8 — SELECT RELEVANT PROJECTS
+
+Include 1–2 projects only if they are supported by my documented experience.
+
+Choose the most relevant project themes based on the JD.
+
+Examples of possible themes:
+
+- Enterprise Salesforce CRM Modernization
+- Salesforce Automation and Apex Framework
+- Event-Driven Salesforce Integration
+- Experience Cloud Self-Service Portal
+- Salesforce Service Operations Modernization
+- Subscription Billing API Integration
+- OmniStudio Guided Intake
+- Salesforce Security and Access Modernization
+
+These are descriptive themes, not verified official project names.
+
+For each project, include:
+
+**Project Name | Technologies**
+
+Then write 2–3 bullets explaining the business need, implementation, and documented outcome.
+
+Do not invent separate project engagements, clients, technologies, or results.
+
+If the available master resume does not support a credible standalone project section, omit it.
+
+---
+
+## STEP 9 — PRESERVE EDUCATION
+
+Arizona State University — W. P. Carey School of Business
+
+Bachelor of Science (B.S.), Business Data Analytics
+
+Bachelor's Degree, Computer and Information Systems
+
+2015 – 2018
+
+Do not modify my educational credentials.
+
+---
+
+## STEP 10 — OPTIMIZE FOR ATS
+
+Use standard ATS-compatible formatting.
+
+Requirements:
+
+- Clear section headings
+- Reverse chronological employment
+- Exact relevant JD keywords
+- Standard bullet points
+- Consistent job titles and dates
+- No tables or graphics
+- No unnecessary symbols
+- No keyword stuffing
+- No exaggerated claims
+- No artificial ATS match percentages
+- No unsupported technical experience
+
+Ensure that the resume is readable by both ATS software and human recruiters.
+
+Distribute the highest-priority supported keywords naturally across the summary, experience, skills, and projects.
+
+---
+
+## STEP 11 — MAKE THE RESUME SOUND HUMAN
+
+Write like a senior Salesforce professional describing actual engineering work.
+
+Avoid generic AI-generated phrasing.
+
+Do not repeatedly use:
+
+- Leveraged
+- Spearheaded
+- Seamlessly
+- Robust
+- Cutting-edge
+- Dynamic
+- Passionate
+- Results-driven
+
+Use specific technical implementations and business context instead of vague statements.
+
+Each position should have distinct responsibilities and accomplishments.
+
+Avoid repeating essentially identical Apex, Flow, LWC, or integration bullets across multiple employers.
+
+The resume must be credible in a technical interview.
+
+---
+
+## STEP 12 — STRICT ACCURACY REQUIREMENTS
+
+My master resume is the source of truth.
+
+You may:
+
+- Reorder responsibilities by JD relevance.
+- Rewrite existing experience using stronger technical language.
+- Emphasize closely matching responsibilities.
+- Highlight transferable technical skills.
+- Use accurate JD terminology for documented experience.
+- Combine related documented responsibilities into coherent bullets.
+
+You must not:
+
+- Invent employers, clients, job titles, or dates.
+- Fabricate implementations or project ownership.
+- Add technologies absent from my master resume.
+- Invent business results or numerical metrics.
+- Claim production experience based only on conceptual knowledge.
+- Transfer accomplishments between positions.
+- Claim architect-level authority unsupported by my work.
+- Present all preferred JD qualifications as existing experience.
+
+When the JD contains a skill not supported by my master resume, prioritize relevant transferable experience instead.
+
+---
+
+## STEP 13 — FINAL RESUME STRUCTURE
+
+Output the complete resume in this exact order:
+
+**TRIET LE**
+
+Chandler, AZ | (602) 825-3683 | trietle1997@outlook.com
+
+LinkedIn: https://www.linkedin.com/in/trietle97/
+
+**PROFESSIONAL SUMMARY**
+
+6–7 sentences.
+
+**PROFESSIONAL EXPERIENCE**
+
+Docker — 12 bullets
+
+AWS Senior Salesforce Developer — 10 bullets
+
+AWS Salesforce Developer — 9 bullets
+
+Deloitte — 9 bullets
+
+Optional early-career positions only when relevant.
+
+**TECHNICAL SKILLS**
+
+5–7 dynamically selected categories.
+
+**CERTIFICATIONS**
+
+Relevant verified Salesforce certifications.
+
+**PROJECTS**
+
+1–2 supported, JD-relevant projects when appropriate.
+
+**EDUCATION**
+
+Preserve original education.
+
+---
+
+## STEP 14 — FINAL VALIDATION
+
+Before responding, verify:
+
+- Resume is tailored specifically to the provided JD.
+- Target Salesforce role and seniority are correctly identified.
+- Important supported JD keywords are incorporated.
+- Summary contains 6–7 sentences.
+- Docker contains 12 bullets.
+- AWS Senior contains 10 bullets.
+- AWS Developer contains 9 bullets.
+- Deloitte contains 9 bullets.
+- Every primary experience bullet contains 20–25 words.
+- Skills contain 5–7 relevant categories.
+- Employers, job titles, dates, and education remain accurate.
+- Certifications are genuine and relevant.
+- No fabricated achievements or metrics appear.
+- No duplicate or overly repetitive bullets appear.
+- The resume sounds professional, natural, and technically credible.
+- The final resume is ATS-friendly.
+
+Silently revise any bullet that violates the word count.
+
+Do not prioritize keyword matching over factual accuracy.
+
+---
+
+## STEP 15 — FINAL OUTPUT
+
+Provide the complete tailored resume first.
+
+Do not include an explanation or JD analysis before the resume.
+
+After the resume, provide a separate section titled:
+
+**JD ALIGNMENT REPORT — NOT PART OF RESUME**
+
+Briefly include:
+
+1. Target Salesforce role identified
+2. Top 15 JD keywords
+3. Strongest matching experience
+4. Important requirements not supported by my master resume
+5. Any claims or technologies requiring my confirmation
+
+Do not include this report inside the submitted resume.
+
+---
+
+## INPUT
+
+**MY MASTER RESUME:**
+
+[PASTE COMPLETE MASTER RESUME HERE]
+
+**TARGET SALESFORCE JOB DESCRIPTION:**
+
+[PASTE JOB DESCRIPTION HERE]
+
+---
+
+## MOST IMPORTANT FINAL INSTRUCTION
+
+Every time I provide a new Salesforce JD, analyze it independently and rebuild the resume to match that specific role.
+
+Do not reuse the same summary, technical skill ordering, project selection, or experience emphasis for every job.
+
+For example:
+
+- An Apex/LWC role should read like a hands-on Salesforce development resume.
+- A Salesforce Architect role should emphasize documented architecture, integration, security, and technical design experience.
+- A Salesforce Administrator role should emphasize configuration, Flow, security, reporting, and platform support.
+- A CPQ role should emphasize verified CPQ-related work and subscription processes.
+- An OmniStudio role should emphasize documented OmniStudio experience.
+- An Agentforce role should emphasize verified AI-ready Salesforce workflows and appropriately qualified AI knowledge.
+- An Integration role should emphasize APIs, asynchronous processing, middleware patterns, and enterprise integration.
+- A Service Cloud role should emphasize case management, support operations, automation, and customer service workflows.
+
+The goal is to create the strongest possible Salesforce resume for the specific JD, with high ATS relevance, detailed technical experience, natural professional writing, and complete factual credibility.
+
+**Generate the final tailored resume now.**
