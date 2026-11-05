@@ -314,6 +314,33 @@ check, the panel says so on that row rather than hiding it.
 The filter only runs while **POST to localhost:4500/save-data** is ticked. With
 saving off the collector holds nothing, so every candidate is new.
 
+### One application per company per applicant
+
+The rule is the company, not the posting: a second role at an employer is that
+employer a second time, so it is dropped whatever its title or link. Four things
+hold it, because no one of them can alone:
+
+1. **The name.** "Availity, LLC" and "Availity", "Yudrio, Inc." and "Yudrio",
+   "The Home Depot" and "Home Depot" are one company. A legal form at the end, a
+   leading "The", a trailing "(DSS)", accents and punctuation are ignored
+   (`companyKey`, once in `backend/src/db.js` and once in `background.js`, which
+   must stay equal). Nothing else is, so a name kept apart on purpose
+   ("Pyramid Consulting1") stays its own company.
+2. **Claims, for cards in one run.** The collector only knows what has been
+   saved, and a job takes minutes to get there. So the first card through claims
+   its company and the others are dropped at the filter, without opening
+   anything. This holds with saving off too. The claim is on the stored job, so
+   it survives Chrome taking the worker, and it goes when the job fails, or on
+   **Clear**.
+3. **Asked again before the visit.** The answer can be old by the time a job
+   reaches the front of the queue. If the collector now has the company, the row
+   says **Already applied · not opened, skipped** and nothing is spent.
+4. **Refused at the save.** The worker sends `unique: true` to `/save-data`,
+   which makes the check and the insert one step and answers `409` with
+   `duplicate: true` to a company already there. The row says **Already applied
+   · not saved again**. The dashboard's CSV import does not send it: a
+   spreadsheet of applications already made may hold two roles at one employer.
+
 ### Why the filter is its own queue
 
 The two stages run at completely different speeds. A `/get-item` call is a
