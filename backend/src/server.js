@@ -132,6 +132,17 @@ async function fileSubmission(id, { company, jobTitle, jobUrl, documents, date }
   }
 }
 
+/** What a caller is told about the record that made a posting a duplicate. */
+const existingRecord = (record) => ({
+  id: record.id,
+  company: record.company,
+  job_title: record.job_title,
+  job_url: record.job_url,
+  status: record.status,
+  dir_path: record.dir_path,
+  created_at: record.created_at,
+});
+
 app.post('/save-data', async (req, res) => {
   const body = req.body || {};
   const company = String(body.company || '').trim();
@@ -174,6 +185,23 @@ app.post('/save-data', async (req, res) => {
   // the next run's candidates against -- without it every company reads as new
   // and the same employer is applied to over and over.
   const applicant = String(body.profile || '').trim();
+
+  // Optional: refuse this if the applicant already has the company. The check
+  // a sender makes first can be minutes old by now -- generating takes that
+  // long, and something else may have saved in the meantime -- so a live
+  // sender asks for it again here, where nothing can come between the check
+  // and the insert below. A CSV import does not: it is a log of applications
+  // already made, and two roles at one employer are both true.
+  const existing = body.unique ? store.findByCompany(company, applicant) : null;
+  if (existing) {
+    console.log(`[duplicate] ${company} — ${jobTitle} (already #${existing.id})`);
+    return res.status(409).json({
+      ok: false,
+      duplicate: true,
+      error: `already applied to ${existing.company}`,
+      record: existingRecord(existing),
+    });
+  }
 
   const userName = String(body.user || '').trim();
   const user = userName ? store.findOrCreateUser(userName, { auto: config.autoByDefault }) : null;
@@ -265,19 +293,7 @@ app.post('/get-item', (req, res) => {
   const record = store.findByCompany(company, applicant);
   if (!record) return res.json({ code: 401, msg: 'not exist' });
 
-  return res.json({
-    code: 200,
-    msg: 'already exist',
-    record: {
-      id: record.id,
-      company: record.company,
-      job_title: record.job_title,
-      job_url: record.job_url,
-      status: record.status,
-      dir_path: record.dir_path,
-      created_at: record.created_at,
-    },
-  });
+  return res.json({ code: 200, msg: 'already exist', record: existingRecord(record) });
 });
 
 /**

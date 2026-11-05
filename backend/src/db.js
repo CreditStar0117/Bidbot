@@ -56,6 +56,39 @@ export const APPLY_STATUSES = ['none', 'applied', 'cancelled'];
  * never move together: a row can be filed and not sent, or sent and later
  * rejected.
  */
+/**
+ * The form of a company name the duplicate rule compares on.
+ *
+ * The same employer does not come back byte-identical from one board to the
+ * next: "Availity" and "Availity, LLC", "Yudrio, Inc." and "Yudrio", "The Home
+ * Depot" and "Home Depot". Only what never tells two employers apart goes -- a
+ * legal form at the very end, a leading "The", a trailing "(DSS)", accents,
+ * punctuation. Anything else stays, so a name kept apart on purpose
+ * ("Pyramid Consulting1") is still its own company.
+ *
+ * jobright-monitor/background.js carries the same function, for telling cards
+ * in one run apart before any of them has reached this table. Keep them equal.
+ */
+const LEGAL_FORM = /[\s,.]+(inc|incorporated|llc|l\.l\.c|ltd|limited|corp|corporation|co|company|gmbh|plc|ag|sa|bv|pty|pvt|private|lp|llp)\.?$/;
+
+export function companyKey(name) {
+  const plain = String(name || '')
+    .normalize('NFKD')
+    .replace(/\p{M}/gu, '')
+    .toLowerCase()
+    .trim();
+  let core = plain
+    .replace(/\s*\([^)]*\)$/, '')
+    .replace(/^the\s+/, '')
+    .replace(/&/g, ' and ');
+  // "Foo Co., Ltd." ends in two of them.
+  for (let last = null; last !== core; ) {
+    last = core;
+    core = core.replace(LEGAL_FORM, '');
+  }
+  return core.replace(/[^\p{L}\p{N}]+/gu, '') || plain;
+}
+
 export class Store {
   constructor(file) {
     fs.mkdirSync(path.dirname(file), { recursive: true });
@@ -150,6 +183,12 @@ export class Store {
     this.addColumn('profile', 'TEXT');
     this.db.exec('CREATE INDEX IF NOT EXISTS records_user ON records (user_id)');
 
+    // What the duplicate check compares. Refreshed on every start rather than
+    // once, so a change to `companyKey` reaches the rows already here.
+    this.addColumn('company_key', 'TEXT');
+    this.fillCompanyKeys();
+    this.db.exec('CREATE INDEX IF NOT EXISTS records_company_key ON records (company_key)');
+
     // Every record before this column existed belonged to the one person who
     // used this archive before it had a multi-user concept at all. Give that
     // person a name -- "Sisu" -- and hand them everything already here.
@@ -208,6 +247,17 @@ export class Store {
     if (columns.some((column) => column.name === name)) return false;
     this.db.exec(`ALTER TABLE records ADD COLUMN ${name} ${definition}`);
     return true;
+  }
+
+  fillCompanyKeys() {
+    const rows = this.db.prepare('SELECT id, company, company_key FROM records').all();
+    const update = this.db.prepare('UPDATE records SET company_key = ? WHERE id = ?');
+    this.db.exec('BEGIN');
+    for (const row of rows) {
+      const key = companyKey(row.company);
+      if (key !== row.company_key) update.run(key, row.id);
+    }
+    this.db.exec('COMMIT');
   }
 
   /* --- settings ---------------------------------------------------------- */
@@ -276,11 +326,12 @@ export class Store {
     const at = createdAt || new Date().toISOString();
     const result = this.db
       .prepare(
-        `INSERT INTO records (company, job_title, job_url, status, sent_status, sent_at, mode, created_at, user_id, profile)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO records (company, company_key, job_title, job_url, status, sent_status, sent_at, mode, created_at, user_id, profile)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       )
       .run(
         company,
+        companyKey(company),
         jobTitle,
         jobUrl || null,
         status,
@@ -456,21 +507,20 @@ export class Store {
    * second time, and the rule is one application per company per person. The
    * answer is what stops a job link ever being fetched.
    *
-   * Compared on trimmed, case-insensitive values, because the same employer
-   * does not come back byte-identical from one board to the next. A blank
-   * applicant matches the records filed with no applicant (`profile IS NULL`)
+   * Compared on `companyKey`, because the same employer does not come back
+   * byte-identical from one board to the next. A blank applicant matches the records filed with no applicant (`profile IS NULL`)
    * rather than matching everybody's.
    */
   findByCompany(company, profile = null) {
     const applicant = String(profile || '').trim();
     const clause = applicant ? 'lower(trim(profile)) = lower(trim(?))' : 'profile IS NULL';
-    const params = [String(company)];
+    const params = [companyKey(company)];
     if (applicant) params.push(applicant);
     return (
       this.db
         .prepare(
           `SELECT * FROM records
-             WHERE lower(trim(company)) = lower(trim(?))
+             WHERE company_key = ?
                AND ${clause}
              ORDER BY id DESC LIMIT 1`,
         )

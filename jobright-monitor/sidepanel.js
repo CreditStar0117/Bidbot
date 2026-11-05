@@ -170,6 +170,13 @@ function addDetail(key, detail) {
     return;
   }
 
+  // Still in the queue when the collector got the company some other way.
+  if (detail.duplicate) {
+    li.classList.add("dropped");
+    li.appendChild(tag("job-note", "Already applied · not opened, skipped"));
+    return;
+  }
+
   // The POST outcome is the thing you actually need to see at a glance, so it
   // sits on the row rather than inside the collapsed block.
   // Generation runs before the save, so its outcome is reported first.
@@ -195,7 +202,9 @@ function addDetail(key, detail) {
     li.appendChild(
       detail.save.ok
         ? tag("job-note saved", detail.resume?.ok ? "Saved with resume" : "Saved to localhost:4500")
-        : tag("job-note warn", `Save failed: ${detail.save.error}`)
+        : detail.save.duplicate
+          ? tag("job-note", "Already applied · not saved again")
+          : tag("job-note warn", `Save failed: ${detail.save.error}`)
     );
 
     // Saved, but the duplicate check itself was not answered.
@@ -528,9 +537,10 @@ function showManualStatus(text, kind = "") {
 function renderManualResult({ resume, save, duplicate, checkError }) {
   manualResultEl.replaceChildren();
 
-  // Found before the model was asked, so nothing was written or sent.
+  // Nothing was sent, whether this was found before the model was asked or by
+  // the collector at the save.
   if (duplicate) {
-    showManualStatus("Already applied — this applicant has a record at this company. Nothing generated.", "warn");
+    showManualStatus("Already applied — this applicant has a record at this company. Nothing saved.", "warn");
     return;
   }
 

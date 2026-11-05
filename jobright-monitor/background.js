@@ -521,7 +521,7 @@ let visitEnabled = true;
 let saveEnabled = true;
 let visitedCount = 0;
 let savedCount = 0;
-let skippedCount = 0; // company already applied to, so never fetched
+let skippedCount = 0; // company already applied to or taken this run, so never fetched
 let generatedCount = 0;
 let feedTabId = null; // the recommendations tab, used as the detail tabs' opener
 
@@ -689,7 +689,55 @@ resumeRun();
 // run started before the backend was up apply to the same company twice: every
 // check failed, every card went through, and by the time the slow queue got to
 // saving them the backend was up and took them all.
+//
+// The collector only knows what has been saved, and a job takes minutes to
+// reach it. Left at that, every card of one company that arrives before the
+// first is saved reads as new, and all of them get generated and saved. So the
+// first card through claims its company, and the claim drops the others here,
+// for the same price as the collector saying no. A claim is held until the job
+// is saved, when the collector takes over, and let go if the job fails, so the
+// company can be tried again. It rides on the stored job, because the worker
+// can be taken mid-run and the jobs still owed have to keep theirs.
 // ---------------------------------------------------------------------------
+
+// The same function as backend/src/db.js, which explains it. Keep them equal.
+const LEGAL_FORM = /[\s,.]+(inc|incorporated|llc|l\.l\.c|ltd|limited|corp|corporation|co|company|gmbh|plc|ag|sa|bv|pty|pvt|private|lp|llp)\.?$/;
+
+function companyKey(name) {
+  const plain = String(name || "")
+    .normalize("NFKD")
+    .replace(/\p{M}/gu, "")
+    .toLowerCase()
+    .trim();
+  let core = plain
+    .replace(/\s*\([^)]*\)$/, "")
+    .replace(/^the\s+/, "")
+    .replace(/&/g, " and ");
+  // "Foo Co., Ltd." ends in two of them.
+  for (let last = null; last !== core; ) {
+    last = core;
+    core = core.replace(LEGAL_FORM, "");
+  }
+  return core.replace(/[^\p{L}\p{N}]+/gu, "") || plain;
+}
+
+const claimed = new Set(); // applicant + company of every job holding its company
+let claimsLoaded = null;
+
+const loadClaims = () =>
+  (claimsLoaded ??= chrome.storage.local.get("jobs").then(({ jobs = [] }) => {
+    for (const job of jobs) if (job.claim) claimed.add(job.claim);
+  }));
+
+// Scoped to the applicant like the collector's own rule: a list kept across a
+// switch of profile says nothing about the new applicant. A card with no
+// company has nothing to claim.
+async function claimOf(job) {
+  const company = companyKey(job.company);
+  if (!company) return null;
+  const profile = await getProfile();
+  return `${String(profile?.applicant || "").trim().toLowerCase()}␟${company}`;
+}
 
 const checkQueue = [];
 const checked = new Set(); // candidates ever filtered, so a re-scan cannot re-ask
@@ -712,6 +760,8 @@ async function drainChecks() {
   const release = holdWorker();
 
   try {
+    await loadClaims();
+
     while (checkQueue.length) {
       const signal = runSignal();
       if (signal?.aborted) break;
@@ -723,6 +773,15 @@ async function drainChecks() {
       }
 
       const job = checkQueue.shift();
+
+      // This company is already spoken for in this run. Asked first, because
+      // it holds with saving off and with the collector down.
+      const claim = await claimOf(job);
+      if (claim && claimed.has(claim)) {
+        skippedCount++;
+        queueStatus();
+        continue;
+      }
 
       // Only meaningful while saving is on: with it off the collector holds
       // nothing, so every candidate is new.
@@ -767,6 +826,13 @@ async function drainChecks() {
         skippedCount++;
         queueStatus();
         continue;
+      }
+
+      // A card with no link can never be worked, so it holds nothing against
+      // one that can.
+      if (claim && job.href) {
+        claimed.add(claim);
+        job.claim = claim;
       }
 
       acceptedCount++;
@@ -839,8 +905,26 @@ async function drain() {
       const job = queue.shift();
       queueStatus({ current: job.title });
 
-      // Everything here has already cleared the duplicate filter, so this
-      // stage is only the slow work: open, read, generate, save.
+      // The filter's answer can be old by now: a job kept across a Stop, one a
+      // Manual save got to first, or one whose worker was taken after the save
+      // but before the result was stored. Asked again here, while saying no
+      // still costs nothing. Past this point it is only the slow work: open,
+      // read, generate, save.
+      if (saveEnabled) {
+        const check = await checkExisting(job, signal);
+        if (check.stopped) {
+          queue.unshift(job);
+          break;
+        }
+        if (check.exists) {
+          skippedCount++;
+          const detail = { ok: true, duplicate: true };
+          await updateJob(job.key, { detail });
+          broadcast({ type: "JOB_DETAIL", key: job.key, detail });
+          continue;
+        }
+      }
+
       let detail;
       try {
         detail = await visitJob(job, signal);
@@ -882,8 +966,15 @@ async function drain() {
         break;
       }
 
+      // Nothing reached the collector, so nothing stands for this company any
+      // more and a later card may have it.
+      if (saveEnabled && !detail.save?.ok && !detail.save?.duplicate) {
+        claimed.delete(job.claim);
+        job.claim = null;
+      }
+
       visitedCount++;
-      await updateJob(job.key, { detail });
+      await updateJob(job.key, { detail, claim: job.claim });
       broadcast({ type: "JOB_DETAIL", key: job.key, detail });
 
       // Politeness toward jobright.ai for having opened a page. Duplicates
@@ -1955,11 +2046,17 @@ async function saveJob(job, detail, signal, profile) {
     user: profile?.countryName || "",
     // Who applied. Written to the record so the duplicate check above has
     // something to match the next run against.
-    profile: profile?.applicant || ""
+    profile: profile?.applicant || "",
+    // The check was made before the generation, and that can be minutes ago:
+    // the collector makes it again, in the same step as the save.
+    unique: true
   };
 
   try {
-    const { res } = await postJson(SAVE_ENDPOINT, payload, signal);
+    const { res, data } = await postJson(SAVE_ENDPOINT, payload, signal);
+    if (res.status === 409 && data?.duplicate) {
+      return { ok: false, duplicate: true, status: res.status, error: data.error };
+    }
     return res.ok
       ? { ok: true, status: res.status }
       : { ok: false, status: res.status, error: `HTTP ${res.status} ${res.statusText}` };
@@ -2040,7 +2137,7 @@ async function generateManual(input) {
     // the feed run did, and a hand-typed job is not part of one.
     const save = await saveJob(job, detail, undefined, profile);
 
-    return { ok: true, resume, save, duplicate: false, checkError: check.error };
+    return { ok: true, resume, save, duplicate: !!save.duplicate, checkError: check.error };
   } finally {
     release();
     manualBusy = false;
@@ -2209,6 +2306,7 @@ async function handle(msg) {
       queued.clear();
       checkQueue.length = 0;
       checked.clear();
+      claimed.clear();
       acceptedCount = 0;
       tellFeed({ type: "ACCEPTED", count: 0 });
       visitedCount = 0;
